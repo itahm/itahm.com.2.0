@@ -142,7 +142,9 @@ function onApply(e) {
 		
 		// 추가인 경우 position 정보는 갱신되지 않으므로 임의로 넣어준다.
 		top.databases.position[name] = {
-			x: 0, y: 0
+			x: 0,
+			y: 0,
+			ifEntry: {}
 		};
 	}
 	
@@ -222,13 +224,9 @@ function initialize(name) {
 			<h2>그룹</h2>
 			<div class="table">
 				<ul>
-					<li>상위
-					<li id="parent">
-				</ul>
-				<ul>
 					<li>이름
 					<li>
-						<input type="text" name="name" placeholder="그룹 이름" required>
+						<input type="text" name="name" placeholder="그룹 이름" autofocus required>
 				</ul>
 				<ul>
 					<li>아이콘
@@ -254,8 +252,6 @@ function initialize(name) {
 		<script>
 
 var form = document.querySelector("form");
-
-document.getElementById("parent").textContent = top.databases.local.parent;
 
 form.elements.type.appendChild(buildType());
 

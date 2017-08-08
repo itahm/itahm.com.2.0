@@ -132,5 +132,7 @@ ITAhM.iconData = {
         "group": "group",
         "src": "img/group.png",
         "disabled": "img/group.png"
+        /*"src": "img/svg/group.svg",
+        "disabled": "img/svg/disabled/group.svg"*/
     }
 };
