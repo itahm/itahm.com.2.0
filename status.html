@@ -67,7 +67,7 @@ section:hover:not(.information) {
 	display: inline-block;
 }
 
-.circular_bar svg {
+.circular_bar> svg {
 	width: 100%;
 	height: 100%;
 }
@@ -81,6 +81,18 @@ section:hover:not(.information) {
 
 .circular_bar .progress.bar{
 	transition: stroke-dashoffset .5s ease-out;
+}
+
+.circular_bar.green {
+	color: #0f0;
+}
+
+.circular_bar.red r {
+	color: #f00;
+}
+
+.circular_bar.orange {
+	color: #fc0;
 }
 
 .circular_bar.green .progress.bar {
@@ -808,7 +820,9 @@ function onSelectResource(resource, index) {
 				<svg>
 					<g transform = "translate(50, 50) rotate(-90)">
 						<circle class="bar" cx="0" cy="0" r="45" />
-						<circle class="progress bar" cx="0" cy="0" r="45" stroke-dasharray="282.74333882308139146163790449516" stroke-dashoffset="282.74333882308139146163790449516" />
+						<circle class="progress bar" cx="0" cy="0" r="45"
+							stroke-dasharray="282.74333882308139146163790449516"
+							stroke-dashoffset="282.74333882308139146163790449516" />
 					</g>
 				</svg>
 			</div>
