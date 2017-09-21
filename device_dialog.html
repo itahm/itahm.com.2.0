@@ -164,6 +164,7 @@ function onApply(e) {
 	
 	var ip = form.elements.ip.value;
 	
+	// 생성
 	if (!window.device) {
 		if (ip in top.databases.device) {
 			alert("IP address already exists.");
@@ -178,7 +179,7 @@ function onApply(e) {
 			ifSpeed: {}	
 		};
 		
-		// 추가인 경우 position 정보는 갱신되지 않으므로 임의로 넣어준다.
+		// 생성인 경우 position 정보는 갱신되지 않으므로 임의로 넣어준다.
 		top.databases.position[ip] = {
 			x: 0,
 			y: 0,

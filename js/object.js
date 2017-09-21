@@ -386,10 +386,7 @@ var ITAhM = ITAhM || {};
 			}
 			
 			xhr.withCredentials = true;
-			
 			xhr.onloadend = this.onComplete.bind(xhr, onResponse);
-			
-			this.status = 0;
 			
 			xhr.send(JSON.stringify(request));
 		},
