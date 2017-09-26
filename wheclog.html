@@ -170,6 +170,7 @@ ul.log >li:nth-child(3) {
 
 ul.log >li:last-child {
 	flex: 1;
+	position: relative;
 }
 
 header {
@@ -197,7 +198,7 @@ header >ul.log >li:not(:last-child) {
 }
 
 #count {
-	float: right;
+	position: absolute; top: -50%; right: 10px;
 	font-size: 2em;
 	font-weight: bold;
 }
@@ -632,7 +633,9 @@ function setBodyClass(className) {
 function initialize(data) {
 	var config = JSON.parse(data);
 	
-	setFilterDialog(config.filter);
+	if ("filter" in config) {
+		setFilterDialog(config.filter);
+	}
 	
 	if ("clean" in config) {
 		window.clean.elements["clean"].value = config.clean;
@@ -662,8 +665,8 @@ function initialize(data) {
 				<input type="submit" value="선택">				
 			</form>
 			<button id="config">필터</button>
-			<i id="count"></i>
 			<form id="clean">
+				로그보관기간: 
 				<input type="number" name="clean" value="0" placeholder="로그보관기간(일)">
 				<input type="submit" value="적용">
 			</form>
@@ -675,7 +678,7 @@ function initialize(data) {
 				<li>Host
 				<li>Facility
 				<li>Severity
-				<li>Message
+				<li>Message <i id="count"></i>
 			</ul>
 		</header>
 		<div id="log"></div>
@@ -759,7 +762,10 @@ var log = document.getElementById("log"),
 	clean = document.getElementById("clean"),
 	key = document.getElementById("key"),
 	target = document.getElementById("target"),
-	config = {}, c;
+	config = {
+		filter: [],
+		clean: 0
+	}, c;
 
 document.getElementById("close_host").onclick = setBodyClass.bind("remove", "select");
 document.getElementById("edit").onclick = setBodyClass.bind("add", "edit");

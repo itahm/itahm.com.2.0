@@ -140,6 +140,15 @@ Array.prototype.fill = Array.prototype.fill || function (val) {
 				+ (h > 9? "": "0") + h +":"+ (m > 9? "": "0") + m +":"+ (s > 9? "": "0") + s;
 		},
 		
+		toTimeString: function (mills) {
+			var date = new Date(mills),
+				hh = date.getHours(),
+				mm = date.getMinutes(),
+				ss = date.getSeconds();
+			
+			return (hh > 9? "": "0") + hh +":"+ (mm > 9? "": "0") + mm +":"+ (ss > 9? "": "0") + ss;
+		},
+		
 		download: function(blob, fileName) {
 			if (window.navigator.msSaveBlob) {
 				window.navigator.msSaveBlob(blob, fileName);
