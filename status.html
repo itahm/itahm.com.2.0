@@ -63,7 +63,7 @@ svg.bar {
 	height: 100px;
 	border-radius: 50%;
 	box-sizing: border-box;
-	border: 3px solid green;
+	border: 3px solid #0f0;
 	overflow: hidden;
 }
 
@@ -76,8 +76,9 @@ div.memory.orange svg.bar {
 }
 
 div.memory.red svg.bar {
-	border-color: red;
+	border-color: #f00;
 }
+
 
 rect[height].bar {
 	animation: bar 1s;
@@ -96,12 +97,16 @@ div.bar::after {
 	font-weight: bold;
 }
 
+div.memory.green rect.bar {
+	fill: #0f0;
+}
+
 div.memory.orange rect.bar {
 	fill: orange;
 }
 
 div.memory.red rect.bar {
-	fill: red;
+	fill: #f00;
 }
 
 @keyframes bar {
@@ -112,6 +117,7 @@ div.memory.red rect.bar {
 		transform: scale(1, 1);
 	}
 }
+
 .processor_item {
 	margin: 10px;
 }
@@ -135,7 +141,7 @@ div.memory.red rect.bar {
 	stroke-cap: round;
 }
 
-.circular_bar .progress.bar{
+.circular_bar .progress.bar {
 	transition: stroke-dashoffset .5s ease-out;
 }
 
@@ -143,12 +149,12 @@ div.memory.red rect.bar {
 	color: #0f0;
 }
 
-.circular_bar.red r {
+.circular_bar.red {
 	color: #f00;
 }
 
 .circular_bar.orange {
-	color: #fc0;
+	color: #ffa500;
 }
 
 .circular_bar.green .progress.bar {
@@ -160,7 +166,7 @@ div.memory.red rect.bar {
 }
 
 .circular_bar.orange .progress.bar {
-	stroke: #fc0;
+	stroke: #ffa500;
 }
 
 .circular_bar::after {

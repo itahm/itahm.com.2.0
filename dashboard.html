@@ -68,8 +68,8 @@ iframe {
 }
 
 section {
-	display: flex;
-	flex: 1 1 auto;
+	/*display: flex;
+	flex: 1 1 auto;*/
 	min-width: 260px;
 	margin: 0 .5em;
 	flex-direction: column;
@@ -87,8 +87,8 @@ section >div:first-child {
 }
 
 section> div:last-child {
-	flex: 1;
-	overflow: auto;
+	/*flex: 1;
+	overflow: auto;*/
 }
 
 ul {
@@ -97,7 +97,7 @@ ul {
 }
 
 .list {
-	padding: .5em; 1em;
+	padding: .5em 1em;
 }
 
 .right {
@@ -445,7 +445,7 @@ function initialize() {
 	
 	document.body.classList.remove("loading");
 	
-	window.setInterval(update, 10000);
+	//window.setInterval(update, 10000);
 }
 
 function createTopList(resource) {
