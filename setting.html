@@ -215,6 +215,10 @@ function initConfig() {
 		document.getElementById("expire").textContent = new Date(configData.expire).toLocaleString();
 	}
 	
+	if ("custom" in configData) {
+		custom.elements["custom"].value = configData.custom.split(",").join(", ") || "";
+	}
+	
 	if ("dashboard" in configData) {
 		var resources = configData.dashboard,
 			orders = [].sort.call(Object.keys(resources), function (a, b) {
@@ -300,7 +304,9 @@ function onOrderResources(e) {
 	li.parentNode.insertBefore(li, li.previousElementSibling);
 }
 
-function onModifyDashboard() {
+function onModifyDashboard(e) {
+	e.preventDefault();
+	
 	var elements = window.resources.children,
 		li
 		resources = {};
@@ -341,6 +347,8 @@ function onModifyTopN (n) {
 	else if (n > 10) {
 		n = 10;
 	}
+	
+	document.body.classList.add("loading");
 	
 	top.sendRequest({
 		command: "config",
@@ -402,8 +410,12 @@ function onModifyGCM(host) {
 	}
 }
 
-function onDisableGCM() {
+function onDisableGCM(e) {
+	e.preventDefault();
+	
 	if (confirm("구글 클라우드 메세징 서비스를 사용하지 않도록 설정합니다.")) {
+		document.body.classList.remove("loading");
+		
 		top.sendRequest({
 			command: "config",
 			key: "gcm",
@@ -424,12 +436,15 @@ function onEnableSMS(e) {
 	if (confirm("SMS 발송 기능을 "+
 		(checked? "사용 하도록": "사용하지 않도록") +
 		"설정하겠습니까?")) {
-	
+		document.body.classList.remove("loading");
+		
 		top.sendRequest({
 			command: "config",
 			key: "sms",
 			value: checked
 		}, function (response) {
+			document.body.classList.remove("loading");
+			
 			top.databases.config.sms = checked;
 		
 			window.location.reload();
@@ -438,6 +453,127 @@ function onEnableSMS(e) {
 	else {
 		e.preventDefault();
 	}
+}
+
+function onMenuFix(e) {
+	e.preventDefault();
+	
+	var menu = this.elements["menu"].value === "fix"? true: false;
+	
+	document.body.classList.remove("loading");
+	
+	top.sendRequest({
+		command: "config",
+		key: "menu",
+		value: menu
+	}, function () {
+		document.body.classList.remove("loading");
+		
+		top.databases.config.menu = menu;
+	
+		top.setMenu();
+	});
+}
+
+function onEditCustom(e) {
+	e.preventDefault();
+	
+	var customs = this.elements["custom"].value.split(","),
+		custom;
+	
+	for (var i=0, _i=customs.length; i<_i; i++) {
+		customs[i] = customs[i].trim();
+	}
+	
+	custom = customs.join(",");
+	
+	document.body.classList.remove("loading");
+	
+	top.sendRequest({
+		command: "config",
+		key: "custom",
+		value: custom
+	}, function () {
+		document.body.classList.remove("loading");
+		
+		top.databases.config.custom = custom;
+	
+		window.custom.elements["custom"].value = customs.join(", ");
+		
+		alert("장비정보 항목의 추가를 설정하였습니다.");
+	});
+}
+
+function onBackup(e) {
+	e.preventDefault();
+	
+	document.body.classList.add("loading");
+	
+	top.sendRequest({
+		command: "extra",
+		extra: "backup"
+	}, function (backup) {
+		document.body.classList.remove("loading");
+		
+		var d = new Date(),
+			name = "backup_"+ d.getFullYear() + (d.getMonth() +1) + d.getDate();
+		
+		ITAhM.util.download(new Blob([JSON.stringify(backup)],
+			{ type: "text/json;charset=utf-8;"}), name);
+	});
+}
+
+function onRestore(e) {
+	var file = e.target.files[0],
+		reader = new FileReader();
+	
+	reader.onload = function () {
+		document.body.classList.add("loading");
+		
+		top.sendRequest({
+			command: "extra",
+			extra: "restore",
+			backup: JSON.parse(this.result)
+		}, function () {
+			document.body.classList.remove("loading");
+			
+			alert("복구가 완료되었습니다.");
+			
+			top.reload();
+		});
+	};
+	
+	reader.onerror = function () {
+		alert("백업 파일을 읽어올 수 없습니다.")
+	};
+	
+	reader.readAsText(file);
+}
+
+function onTest(e) {
+	e.preventDefault();
+	
+	document.body.classList.add("loading");
+	
+	top.sendRequest({
+		command: "extra",
+		extra: "test"
+	}, function (data) {
+		document.body.classList.remove("loading");
+		
+		var rows = ["ip, sysObjectID, hrProcessorEntry, hrStorageEntry, ifEntry"], row;
+		
+		for (var ip in data) {
+			row = data[ip];
+			
+			rows[rows.length] = 
+				[ip, row.sysObjectID, row.hrProcessorEntry, row.hrStorageEntry, row.ifEntry].join(',');
+		}
+		
+		ITAhM.util.download(new Blob([rows.join("\n")] ,{
+			type: "text/csv;charset=utf-8;"
+		}), "test.csv");
+	});
 }
 
 function initialize() {
@@ -451,9 +587,12 @@ function initialize() {
 		document.body.classList.add("gcm");
 	}
 	
+	window.menu.elements["menu"].value = top.databases.config.menu? "fix": "auto";
+	
 	window.sms.elements["enable"].checked = top.databases.config.sms? true: false;
 	
 	document.body.classList.remove("loading");
+	
 }
 
 		</script>
@@ -476,7 +615,7 @@ function initialize() {
 				<form id="clean">
 					데이터 보관 기간(일) :
 					<input type="number" min="0" max="365" name="clean">
-					<input type="submit" value="적용" disabled>
+					<input type="submit" value="적용" class="root">
 					<i>(데이터 정리 기능을 사용하지 않는 경우 0)</i>
 				</form>
 			<li>
@@ -486,7 +625,7 @@ function initialize() {
 						<option>1
 						<option>5
 					</select>
-					<input type="submit" value="적용" disabled>
+					<input type="submit" value="적용" class="root">
 				</form>
 			<li>
 				<form id="display">
@@ -495,16 +634,39 @@ function initialize() {
 						<option value="name" selected>장비명
 						<option value="address">IP 주소
 					</select>
-					<input type="submit" value="적용" disabled>
+					<input type="submit" value="적용" class="root">
 				</form>
 			<li>
 				<form id="top">
 					Top N : 
 					<input type="number" min="1" max="10" name="top">
-					<input type="submit" value="적용" disabled>
+					<input type="submit" value="적용" class="root">
+				</form>	
+			<li>
+				<form id="menu">
+					<label>
+						메뉴 고정 : 
+						<select name="menu">
+							<option value="auto">자동
+							<option value="fix">고정
+						</select>
+						<input type="submit" value="적용" class="root">
+					</label>
+				</form>
+			<li>
+				<form id="custom">
+					장비정보 항목 추가 : 
+					<input type="text" name="custom" placeholder="라벨1 [,라벨2 ...]">
+					<input type="submit" value="적용" class="root">
+					<i>콤마(,)로 구분</i>
+				</form>
+			<li>
+				<form id="backup">
+					설정 복구 : 
+					<input type="file" name="restore" value="복구" class="root">
+					<input type="submit" value="백업" class="root">
 				</form>
 		</ul>
-	
 	
 		<h2>대쉬보드</h2>
 		<form id="dashboard" class="box">
@@ -540,18 +702,18 @@ function initialize() {
 					<input type="checkbox" name="failureRate">
 					snmp 오류
 			</ol>
-			<input type="submit" value="적용" disabled>
+			<input type="submit" value="적용" class="root">
 		</form>
 		
 		<form id="account">
-			<h2>계정 <input type="image" src="img/plus.png" title="계정 추가" disabled></h2>
+			<h2>계정 <input type="image" src="img/plus.png" title="계정 추가" class="root"></h2>
 			<div class="box">
 				<ul id="account_list" class="list"></ul>
 			</div>
 		</form>
 		
 		<form id="profile">
-			<h2>프로파일 <input type="image" src="img/plus.png" title="프로파일 추가" disabled></h2>
+			<h2>프로파일 <input type="image" src="img/plus.png" title="프로파일 추가" class="root"></h2>
 			<div class="box">
 				<ul id="profile_list" class="list"></ul>
 				<i>등록된 Profile은 변경할 수 없습니다. 삭제후 추가하십시오. (사용중인 Profile은 삭제할 수 없습니다.)</i>
@@ -560,9 +722,9 @@ function initialize() {
 		
 		<form id="sms">
 			<h2>
-				<input type="checkbox" name="enable">
+				<input type="checkbox" name="enable" class="root">
 				SMS
-				<input type="image" src="img/plus.png" title="알림 추가" disabled>
+				<input type="image" src="img/plus.png" title="알림 추가" class="root">
 			</h2>
 			<div class="box">
 				<ul id="sms_list" class="list"></ul>
@@ -573,7 +735,7 @@ function initialize() {
 			<h2>
 				<input type="checkbox" name="disable" checked title="중지">
 				GCM(Google Cloud Messaging)
-				<input type="image" src="img/plus.png" title="알림 추가" disabled>
+				<input type="image" src="img/plus.png" title="알림 추가" class="root">
 			</h2>
 			<div class="box">
 				<input type="text" name="host"><input type="submit" value="사용">
@@ -586,6 +748,14 @@ function initialize() {
 			<input type="text" name="date" required>
 			<input type="submit" value="dump">
 		</form>
+		
+		<form id="test">
+			<h2> </h2>
+			<div class="box">
+				<input type="submit" value="테스트">
+			</div>
+		</form>	
+		
 		<div class="bg_loading"></div>
 		
 		<div class="layout">
@@ -597,19 +767,24 @@ function initialize() {
 		</div>
 		
 		<script src="js/ITAhM.js"></script>
+		<script src="js/object.js"></script>
 		<script>
 
 var resources = document.getElementById("resources"),
 	sms = document.getElementById("sms"),
 	listItem = document.querySelector(".item"),
-	gcm = document.getElementById("gcm");
+	gcm = document.getElementById("gcm"),
+	menu = document.getElementById("menu"),
+	custom = document.getElementById("custom"),
+	backup = document.getElementById("backup");
 	
 window.gcm.elements["host"].value = sessionStorage.host;
 
-if (sessionStorage.level == 0) {
-	[].forEach.call(document.querySelectorAll("input[type=submit], input[type=image]"), function (input) {
-		input.disabled = false;
-	});
+if (parseInt(sessionStorage.level)) {
+	[].forEach.call(document.querySelectorAll(".root"),
+		function (e) {
+			e.disabled = true;
+		});
 }
 
 document.getElementById("account").onsubmit = function (e) {
@@ -648,19 +823,13 @@ document.getElementById("syslog").onsubmit = function (e) {
 	onDump(this.elements["date"]);
 };
 
-window.gcm.elements["disable"].onclick = function (e) {
-	e.preventDefault();
-
-	onDisableGCM();
-};
+window.gcm.elements["disable"].onclick = onDisableGCM;
 
 window.gcm.onsubmit = function (e) {
 	e.preventDefault();
 	
 	onModifyGCM(this.elements["host"]);
 };
-
-window.sms.elements["enable"].onclick = onEnableSMS;
 
 window.sms.onsubmit = function (e) {
 	e.preventDefault();
@@ -680,11 +849,13 @@ document.getElementById("top").onsubmit = function (e) {
 	onModifyTopN(this.elements["top"].value);
 };
 
-document.getElementById("dashboard").onsubmit = function (e) {
-	e.preventDefault();
-	
-	onModifyDashboard();
-};
+backup.onsubmit = onBackup;
+backup.elements["restore"].onchange = onRestore;
+document.getElementById("dashboard").onsubmit = onModifyDashboard;
+document.getElementById("test").onsubmit = onTest;
+window.sms.elements["enable"].onclick = onEnableSMS;
+custom.onsubmit = onEditCustom;
+menu.onsubmit = onMenuFix;
 
 window.resources.onclick = onOrderResources;
 
