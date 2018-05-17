@@ -280,7 +280,7 @@ function resize() {
 
 function sendRequest() {
 	try {
-		opener.top.sendRequest(request, window.onResponse);
+		opener.top.sendRequest(window.request, window.onResponse);
 	}
 	catch (e) {
 		clearInterval(window.schedule);

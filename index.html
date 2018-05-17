@@ -21,11 +21,6 @@ nav {
 	margin: auto;
 }
 
-.logo {
-	font-size: 42px;
-	font-weight: 900;
-}
-
 .title {
 	position: relative;
 	background: url("img/home/title.gif") no-repeat center;
@@ -49,7 +44,7 @@ nav {
 }
 
 .title_1_2 h2 {
-	width: 200px;
+	width: 240px;
 	padding: 1em;
 	border: 3px solid #fff;
 	box-sizing: border-box;
@@ -60,6 +55,25 @@ nav {
 	color: #0084ff;
 	background-color: #fff;
 	cursor: pointer;
+}
+
+#free a:visited,
+#free a:link,
+#free a:active {
+	text-decoration: none;
+	color: #0084ff;
+}
+
+#free a:hover {
+	text-decoration: underline;
+}
+
+#free:not(:hover) >span:not(:first-child) {
+	display: none;
+}
+
+#free:hover >span:first-child {
+	display: none;
 }
 
 .target {
@@ -137,24 +151,77 @@ img[src="img/home/preview.png"] {
 
 .reference {
 	margin: 3em auto;
-	display: flex;
-	justify-content: center;
-}
-
-.reference img {
-	margin: 1em;
-}
-
-.preview {
+	padding: 0;
+	overflow: hidden;
 	text-align: center;
 }
 
-.preview img:not(:first-child) {
-	display: none;
+.reference >table {
+	border: none;
+	width: 1024px;
+	margin: auto;
+	color: #666;
 }
 
-.preview img {
-	animation: slide 5s;
+.reference td {
+	padding: 1em;
+	width: 320px;
+	text-align: center;
+}
+
+.preview {
+	display: flex;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.preview >div {
+	position: relative;
+}
+
+.preview  >div::after {
+	content: "";
+	position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+	background-color: rgba(255, 255, 255, 0.5);
+}
+
+.preview  >div {
+	animation: slide 5s infinite;
+}
+	
+.preview  >div:nth-child(3)::after {
+	background-color: rgba(255, 255, 255, 0);
+	animation: preview 3s;
+}
+
+.map {
+	width: 100%; max-width: 1024px; height: 520px;
+	margin: auto;
+}
+
+#map {
+	width: 100%; height: 100%;
+}
+
+@keyFrames slide {
+	0% {
+		transform: translateX(100%);
+	}
+	60% {
+		transform: translateX(0);
+	}
+	100% {
+		transform: translateX(0);
+	}
+}
+
+@keyFrames preview {
+	from {
+		background-color: rgba(255, 255, 255, 0.5);
+	}
+	to {
+		background-color: rgba(255, 255, 255, 0);
+	} 
 }
 
 footer {
@@ -166,26 +233,13 @@ footer img {
 	width: 1em; height: 1em;
 }
 
-@keyframes slide {
-	0% {
-		opacity: 0;
-	}
-	40% {
-		opacity: 1;
-	}
-	100% {
-		opacity: 1;
-	}
-}
-
 	</style>
 </head>
 <body>
 
 	<nav>
 		<div class="logo">
-			<img src="img/favicon.png" width="32" height="32">
-			<strong>ITAhM</strong>
+			<img src="img/logo.png" height="52">
 		</div>
 	</nav>
 	
@@ -204,7 +258,11 @@ footer img {
 			</div>
 			<div class="title_1_2">
 				<h2 id="demo">Demo</h2>
-				<h2 id="connect">Connect</h2>
+				<h2 id="console">Console</h2>
+				<h2 id="free">
+					<span>Free Download</span>
+					<span><a href="download/ITAhM.exe">exe</a> | <a href="download/ITAhM.jar">jar</a></span>
+				</h2>
 			</div>
 		</div>
 	</div>
@@ -264,30 +322,68 @@ footer img {
 				
 			</p>
 			<img src="img/home/capability.png" width="64" height="64">
-			<p>아이탐은 인텔 i5 프로세서, 4G 메모리, 5400RPM HDD 만으로
+			<p>아이탐은 구매한지 몇년된 노트북에 설치하여도
 				<strong>500노드</strong>
-				이상의 서버와 통신장비를 거뜬히 모니터링할 수 있습니다. 이는 구매한지 오래된
-				개인용 데스크탑 수준의 하드웨어 입니다.
-				아이탐이 제공하는 구성도는 위와 같은 수준의 컴퓨터로 지연현상 없이
-				<strong>3000노드</strong>
-				이상의 장치들을 표현하고 관리할 수 있습니다.</p>
+				이상의 서버와 통신장비를 충분히 모니터링하고 있습니다.
+				아이탐이 제공하는 구성도는 이와 같은 수준의 서버로 지연현상 없이 최소
+				<strong>1000노드</strong>
+				이상의 장비들을 표현하고 관리할 수 있습니다.</p>
 		</div>
 	</div>
 	
-	<div class="reference">
-		<img src="/img/home/teratower.logo.jpg" height="50">
-		<img src="/img/home/aths.logo.png" height="50">
-		<img src="/img/home/whec.logo.gif" height="50">
-		<img src="/img/home/thirautech.logo.png" height="50">
-		<img src="/img/home/kier.logo2.png" height="50">
+	<div class="preview">
+		<div><img src="img/home/home_dashboard.png" width="732"></div>
+		<div><img src="img/home/home_summary.png" width="732"></div>
+		<div><img src="img/home/home_chart.png" width="732"></div>
+		<div><img src="img/home/home_zoom.png" width="732"></div>
+		<div><img src="img/home/home_scrap.png" width="732"></div>
 	</div>
 	
-	<div class="preview">
-		<img src="img/home/dashboard.png" height="500">
-		<img src="img/home/status.png" height="500">
-		<img src="img/home/chart.png" height="500">
-		<img src="img/home/map.png" height="500">
-		<img src="img/home/map_zoom.png" height="500">
+	<div class="reference">
+		<table>
+			<tbody>
+				<tr>
+					<td>
+						<img src="https://www.pyeongchang2018.com/images/common/logo.png" height="50">
+						<h2>평창동계올림픽</h2>
+					</td>
+					<td>
+						<img src="/img/home/gcgf.logo.png" height="50">
+						<h2>경기신용보증재단</h2>
+					</td>
+					<td>
+						<img src="/img/home/kier.logo2.png" height="50">
+						<h2>한국에너지기술연구원</h2>				
+					</td>
+					<td>
+						<img src="/img/home/whec.logo.gif" height="50">
+						<h2>바르질라현대엔진</h2>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<img src="/img/home/thirautech.logo.png" height="50">
+						<h2>티라유텍</h2>
+					</td>
+					<td>
+						<img src="/img/home/teratower.logo.jpg" height="50">
+						<h2>테라타워</h2>
+					</td>
+					<td>
+						<img src="/img/favicon.png" height="50">
+						<h2> </h2>
+					</td>
+					<td>
+						<img src="/img/home/aths.logo.png" height="50">
+						<h2>안산공업고등학교</h2>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	
+	<div class="map">
+		<div id="map"></div>
 	</div>
 	
 	<footer>
@@ -296,23 +392,52 @@ footer img {
 			서울툭별시 성북구 동소문로 63, 6층 10호 010-2538-6433 itahm2014@gmail.com
 		</p>
 	</footer>
+	<script>
+function myMap() {
+	const lat = 37.591542,
+		lng = 127.012263,
+		map = new google.maps.Map(document.getElementById("map"), {
+			center:new google.maps.LatLng(lat, lng),
+			zoom: 14,
+		}),
+		marker = new google.maps.Marker({
+			label: {
+				text: "서울특별시 성북구 동소문로 63, 6층 10호",
+				color: "#333",
+				fontWeight: "bold"
+			},
+			position: {
+				lat:  lat,
+				lng: lng
+			},
+			map: map,
+			icon: {
+				url: "/img/favicon.png",
+				labelOrigin: new google.maps.Point(0, 50),
+				scaledSize: new google.maps.Size(36, 36)
+			}
+		});
 	
+	marker.setAnimation(google.maps.Animation.BOUNCE);
+}
+	</script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB3lDcxrcNH8nH4thkJ7v2Grhf2309d5TA&callback=myMap"></script>
 	<script>
 	
+const preview = document.querySelector(".preview"); 
 document.getElementById("demo").onclick = function () {
 	window.location.href = "demo.html";
 };
 
-document.getElementById("connect").onclick = function () {
-	window.location.href = "connect.html";
+document.getElementById("console").onclick = function () {
+	window.location.href = "console.html";
 };
 
-(function (preview) {
-	window.setInterval(function () {
-		preview.appendChild(preview.firstElementChild);
-	}, 5000);
-})(document.querySelector(".preview"));
-	
+
+document.querySelector(".preview>div").addEventListener("animationiteration", function () {
+	preview.appendChild(preview.firstElementChild);
+});
+
 	</script>
 </body>
 </html>

@@ -19,6 +19,8 @@ body {
 }
 
 aside {
+	position: fixed; top: 0; bottom: 0; left: 0;
+	pointer-events: none;
 	width: 300px;
 	display: flex;
 	box-sizing: border-box;
@@ -48,7 +50,8 @@ article {
 
 .map {
 	flex: 1;
-	border: 3px solid #0084ff;
+	/*border: 3px solid #0084ff;*/
+	border: 3px solid #000;
 	box-sizing: border-box;
 	border-radius: 3px;
 	position: relative;
@@ -57,6 +60,7 @@ article {
 	user-select: none;
 	animation-duration: .5s;
 	animation-timing-function:  cubic-bezier(.9, .1, .9, .1);
+	overflow: hidden;
 }
 
 svg {
@@ -185,8 +189,9 @@ section >div:first-child {
 	border-bottom: none;
 	font-weight: bold;
 	color: #fff;
-	background-color: #0084ff;
-	text-shadow: 1px 1px 1px #00f;
+	/*background-color: #0084ff;*/
+	background-color: #000;
+	text-shadow: 1px 1px 1px #777;
 }
 
 section> div:last-child {
@@ -219,6 +224,9 @@ footer {
 	justify-content: space-between;
 	font-weight: bold;
 	margin: 3px 0;
+	padding: 0.5em;
+	background-color: rgba(255, 255, 255, 0.2);
+	border-radius: 5px;
 }
 
 .summary> li {
@@ -308,8 +316,6 @@ body.name .list_item> li:nth-child(2) {
 
 .list_item> li:last-child::after {
 	content: attr(data-value);
-	/*display: inline-block;
-	animation: flow 1s;*/
 }
 
 .list_item> li:last-child >div {
@@ -319,27 +325,33 @@ body.name .list_item> li:nth-child(2) {
 }
 
 .list_item> li:last-child.red {
-	border-color: #f00;
+	/*border-color: #f00;*/
+	border-color: #8e24aa;
 }
 
 .list_item> li:last-child.red >div {
-	background: linear-gradient(to right, rgba(255, 0, 0, 0.5), #f00);
+	/*background: linear-gradient(to right, rgba(255, 0, 0, 0.5), #f00);*/
+	background: linear-gradient(to right, rgba(142, 36, 170, 0.5), #8e24aa);
 }
 
 .list_item> li:last-child.orange {
-	border-color: #f60;
+	/*border-color: #f60;*/
+	border-color: #f6bf26;
 }
 
 .list_item> li:last-child.orange >div {
-	background: linear-gradient(to right, rgba(255, 96, 0, 0.5), #f60);
+	/*background: linear-gradient(to right, rgba(255, 96, 0, 0.5), #f60);*/
+	background: linear-gradient(to right, rgba(246, 191, 38, 0.5), #f6bf26);
 }
 
 .list_item> li:last-child.green {
-	border-color: #0f0;
+	/*border-color: #0f0;*/
+	border-color: #00897b;
 }
 
 .list_item> li:last-child.green >div {
-	background: linear-gradient(to right, rgba(0, 255, 0, 0.5), #0f0);
+	/*background: linear-gradient(to right, rgba(0, 255, 0, 0.5), #0f0);*/
+	background: linear-gradient(to right, rgba(0, 137, 123, 0.5), #00897b);
 }
 
 .agent_status {
@@ -384,10 +396,6 @@ body.name .list_item> li:nth-child(2) {
 	border-radius: 3px;
 }
 
-.frame {
-	flex: 1;
-}
-	
 .layout {
 	display: none;
 }
@@ -452,7 +460,7 @@ body.name .list_item> li:nth-child(2) {
 	background: linear-gradient(to bottom, rgba(232,232,232,1), rgba(255,255,255,0));
 }
 
-.ball::after {
+.ready::after {
 	content: attr(data-value);
 }
 
@@ -482,7 +490,7 @@ body.name .list_item> li:nth-child(2) {
 	4% {
 		top: 40%;
 		height: 50%;
-		animtion-timing-function: ease-out;
+		animation-timing-function: ease-out;
 	}
 	5% {
 		top: 45%;
@@ -531,11 +539,11 @@ body.name .list_item> li:nth-child(2) {
 
 .item::before {
 	content: "";
-	height: 1em; width: 1em;
+	height: 2em; width: 2em;
 	position: absolute; top: 50%; left: -2em;
 	background-repeat: no-repeat;
 	background-image: url("img/normal.png");
-	background-size: 1em;
+	background-size: 1.6em;
 	transform: translateY(-50%);
 }
 
@@ -556,19 +564,19 @@ body.name .list_item> li:nth-child(2) {
 .item> li:nth-child(3) {
 	flex: 2;
 }
-
+/*
 .item.shutdown {
 	background-color: red;
 }
-
+*/
 .item.shutdown::before {
 	background-image: url("img/warning.png");
 }
-
+/*
 .item.critical {
 	background-color: orange;
 }
-
+*/
 .item.critical::before {
 	background-image: url("img/siren.png");
 }
@@ -624,9 +632,9 @@ function initialize() {
 	
 	initMap();
 	
-	document.body.classList.remove("loading");
+	removeClass(document.body, "loading");
 	
-	window.setInterval(update, 10000);
+	window.setInterval(update, 5000);
 }
 
 function createTopList(resource) {
@@ -642,25 +650,19 @@ function createTopList(resource) {
 }
 
 function update() {
-	document.body.classList.remove("update");
+	removeClass(document.body, "update");
 	
-	top.sendRequest({
-		command: "extra",
-		extra: "top",
-		ip: "127.0.0.1"
-	}, function (response) {
-		var list;
+	let list;
+	
+	for (var resource in window.topList) {
+		list = window.topList[resource];
 		
-		for (var resource in window.topList) {
-			list = window.topList[resource];
-			
-			if (resource in response) {
-				setTop(response[resource], list, window.resources[resource]);
-			}
+		if (resource in top.topList) {
+			setTop(top.topList[resource], list, window.resources[resource]);
 		}
-	
-		document.body.classList.add("update");
-	});
+	}
+
+	document.body.classList.add("update");
 	
 	initStats();
 }
@@ -680,9 +682,9 @@ function initStats() {
 		window.summaryList.removeChild(window.summaryList.firstChild);
 	}
 	
-	for (var ip in deviceData) {
-		device = deviceData[ip];
-		monitor = monitorData[ip];
+	for (var id in deviceData) {
+		device = deviceData[id];
+		monitor = device.ip && monitorData[device.ip];
 	
 		if (!monitor) {
 			continue;
@@ -726,6 +728,10 @@ function initStats() {
 	window.alert.dataset.value = shutdown;
 	window.critical.dataset.value = critical;
 	window.normal.dataset.value = normal;
+	
+	window.alert.classList.add("ready");
+	window.critical.classList.add("ready");
+	window.normal.classList.add("ready");
 	
 	var labels = Object.keys(labelData).sort(function (a, b) {
 		return a > b? 1: -1;
@@ -785,15 +791,18 @@ function createStatusItem(label, critical, alert, normal, sum) {
 	
 	li = ul.appendChild(document.createElement("li"));
 	li.dataset.value = alert;
-	li.className = "ball red";
+	//li.className = "ball red ready";
+	li.className = "ready";
 	
 	li = ul.appendChild(document.createElement("li"));
 	li.dataset.value = critical;
-	li.className = "ball orange";
+	//li.className = "ball orange ready";
+	li.className = "ready";
 	
 	li = ul.appendChild(document.createElement("li"));
 	li.dataset.value = normal;
-	li.className = "ball green";
+	//li.className = "ball green ready";
+	li.className = "ready";
 	
 	ul.className = "summary";
 	
@@ -840,11 +849,12 @@ function setTop(topData, list, args) {
 
 function createGaugeItem(ip, value, rate, resource, index) {
 	var item = document.createElement("ul"),
+		id = top.getDeviceID(ip),
 		bar;
 	
 	item.className = "list_item";
 	
-	item.appendChild(document.createElement("li")).textContent = top.databases.device[ip].name || ip;
+	item.appendChild(document.createElement("li")).textContent = top.databases.device[ip].name;
 	item.appendChild(document.createElement("li")).textContent = ip;
 	
 	bar = item.appendChild(document.createElement("li"));
@@ -859,7 +869,7 @@ function createGaugeItem(ip, value, rate, resource, index) {
 	}
 	
 	item.onclick = function () {
-		top.showChart(ip, resource, index);
+		top.showStatus(id, resource, index);
 	}
 	
 	return item;
@@ -867,18 +877,19 @@ function createGaugeItem(ip, value, rate, resource, index) {
 
 function createTopItem(ip, value) {
 	var item = document.createElement("ul"),
+		id = top.getDeviceID(ip),
 		bar;
 	
 	item.className = "list_item";
 	
-	item.appendChild(document.createElement("li")).textContent = top.databases.device[ip].name || ip;
+	item.appendChild(document.createElement("li")).textContent = top.databases.device[ip].name;
 	item.appendChild(document.createElement("li")).textContent = ip;
 	
 	bar = item.appendChild(document.createElement("li"));
 	bar.dataset.value = value;
 	
 	if (value.substring(value.length -1, value.length) == "%") {
-		var p = value.substring(0, value.length -1);
+		let p = value.substring(0, value.length -1);
 		
 		bar.appendChild(document.createElement("div")).style.width = value;
 		
@@ -886,7 +897,7 @@ function createTopItem(ip, value) {
 	}
 	
 	item.onclick = function () {
-		top.showChart(ip);
+		top.showStatus(id);
 	}
 	
 	return item;
@@ -977,6 +988,51 @@ function toTimeString(mills) {
 	return (hh > 9? "": "0") + hh +":"+ (mm > 9? "": "0") + mm +":"+ (ss > 9? "": "0") + ss;
 }
 
+
+function addClass(e, className) {
+	var cls = e.getAttribute("class"),
+		classList = cls? cls.split(" "): [];
+	
+	for (var i=1, _i=arguments.length; i<_i; i++) {
+		if (classList.indexOf(className) === -1) {
+			classList.push(className);
+		}
+	}
+	
+	e.setAttribute("class", classList.join(" "));
+}
+
+function removeClass(e, className) {
+	var cls = e.getAttribute("class"),
+		classList = cls? cls.split(" "): [],
+		index;
+	
+	for (var i=1; i<arguments.length; i++) {
+		className = arguments[i];
+		
+		index = classList.indexOf(className);
+		
+		if (index !== -1) {
+			classList.splice(index, 1);
+		}
+	}
+	
+	e.setAttribute("class", classList.join(" "));
+}
+
+function hasClass(e, className) {
+	var cls = e.getAttribute("class"),
+		classList = cls? cls.split(" "): [];
+	
+	for (var i=1; i<arguments.length; i++) {
+		if (classList.indexOf(arguments[i]) == -1) {
+			return false;
+		}
+	}
+	
+	return true;
+}
+
 // public
 function onEvent(ip) {
 	window.location.reload();
@@ -986,7 +1042,24 @@ function onEvent(ip) {
 		
 	</head>
 	
-	<body class="loading name">
+	<body class="loading name">		
+		<article>
+			<div class="map">
+				<svg id="map">
+					<defs>
+						<circle r="35" id="circle"></circle>
+					</defs>
+					<g id="transform" transform="translate(0, 0) scale(1, 1) translate(0, 0)">
+						<g id="line"></g>
+						<g id="device"></g>
+					</g>
+				</svg>
+			</div>
+			<div draggable="true" id="event_widget">
+				<div id="event_list"></div>
+			</div>
+		</article>
+		
 		<aside>
 			<header>
 				<ul>
@@ -1014,23 +1087,6 @@ function onEvent(ip) {
 			<div id="summary_list"></div>
 			
 		</aside>
-		
-		<article>
-			<div class="map">
-				<svg id="map">
-					<defs>
-						<circle r="35" id="circle"></circle>
-					</defs>
-					<g id="transform" transform="translate(0, 0) scale(1, 1) translate(0, 0)">
-						<g id="line"></g>
-						<g id="device"></g>
-					</g>
-				</svg>
-			</div>
-			<div draggable="true" id="event_widget">
-				<div id="event_list"></div>
-			</div>
-		</article>
 		
 		<footer>
 			<div id="top_list"></div>
@@ -1109,25 +1165,24 @@ var summaryList = document.getElementById("summary_list"),
 	};
 
 if ("display" in top.databases.config) {
-	document.body.classList[top.databases.config.display == "name"? "add": "remove"]("name");
+	window[top.databases.config.display == "name"? "addClass": "removeClass"](document.body, "name");
 }
 
 (function () {
-	var svgNS = "http://www.w3.org/2000/svg",
+	const svgNS = "http://www.w3.org/2000/svg",
 		xlinkNS = "http://www.w3.org/1999/xlink",
 		ICON_SIZE = 40,
 		OFFSET_C = ICON_SIZE * Math.sin(Math.PI /4),
-		OFFSET_R = OFFSET_C - ICON_SIZE /2;
-	
-	var mapCanvas = document.getElementById("map"),
+		OFFSET_R = OFFSET_C - ICON_SIZE /2,
+		mapCanvas = document.getElementById("map"),
 		deviceCanvas = document.getElementById("device"),
 		lineCanvas = document.getElementById("line"),
 		transform = document.getElementById("transform").transform.baseVal,
 		fragment = document.createDocumentFragment(),
 		linkData = {},
-		svgData = {},
-		checked = {},
-		scale = 1,
+		svgData = {};
+	
+	var scale = 1,
 		isDragging = false,
 		delay;
 	
@@ -1138,7 +1193,7 @@ if ("display" in top.databases.config) {
 	mapCanvas.addEventListener("dragoff", onDragEnd);
 	
 	if ("display" in top.databases.config) {
-		mapCanvas.classList[top.databases.config.display == "name"? "add": "remove"]("name");
+		window[top.databases.config.display == "name"? "addClass": "removeClass"](mapCanvas, "name");
 	}
 	
 	mapCanvas.addEventListener("wheel", function (e) {
@@ -1193,14 +1248,14 @@ if ("display" in top.databases.config) {
 	function moveAllDevice(x, y) {
 		var group = top.databases.local.parent, moved;
 		
-		for (var ip in top.databases.device) {
-			pos = top.databases.position[ip];
+		for (var id in top.databases.device) {
+			pos = top.databases.position[id];
 			
 			if (pos.parent !== group) {
 				continue;
 			}
 			
-			moved = moveDevice(ip, x, y);
+			moved = moveDevice(id, x, y);
 			
 			pos.x = moved.x;
 			pos.y = moved.y;
@@ -1243,8 +1298,8 @@ if ("display" in top.databases.config) {
 		data.name2.setAttribute("y", (y2 *2 + y1) /3);
 	}
 
-	function addDevice(ip, pos) {
-		var device = top.databases.device[ip],
+	function addDevice(id, pos) {
+		var device = top.databases.device[id],
 			svgDevice = document.createElementNS(svgNS, "g"),
 			svgIcon = document.createElementNS(svgNS, "image"),
 			svgBG = document.createElementNS(svgNS, "circle"),
@@ -1253,7 +1308,7 @@ if ("display" in top.databases.config) {
 			svgName = document.createElementNS(svgNS, "tspan");
 			
 		if (!pos) {
-			top.databases.position[ip] = pos = {x: 0, y: 0};
+			top.databases.position[id] = pos = {x: 0, y: 0};
 		}
 		
 		svgIcon.setAttribute("x", ICON_SIZE *-1 /2);
@@ -1285,18 +1340,18 @@ if ("display" in top.databases.config) {
 		
 		deviceCanvas.appendChild(svgDevice);
 		
-		svgData[ip] = svgDevice;
+		svgData[id] = svgDevice;
 		
-		drawDevice(ip);
+		drawDevice(id);
 	}
 
-	function drawDevice(ip) {
-		var device = top.databases.device[ip],
-			svgDevice = svgData[ip],
+	function drawDevice(id) {
+		var device = top.databases.device[id],
+			svgDevice = svgData[id],
 			svgIcon = svgDevice.querySelector("image"),
-			pos = top.databases.position[ip],
+			pos = top.databases.position[id],
 			icon = getIcon(device.type || "unknown"),
-			monitor = top.databases.monitor[ip];
+			monitor = device.ip && top.databases.monitor[device.ip];
 		
 		removeClass(svgDevice, "shutdown", "critical");
 		
@@ -1323,57 +1378,13 @@ if ("display" in top.databases.config) {
 		return hasClass(svgDevice, "device")? svgDevice: null;
 	}
 
-	function addClass(e, className) {
-		var cls = e.getAttribute("class"),
-			classList = cls? cls.split(" "): [];
-		
-		for (var i=1, _i=arguments.length; i<_i; i++) {
-			if (classList.indexOf(className) === -1) {
-				classList.push(className);
-			}
-		}
-		
-		e.setAttribute("class", classList.join(" "));
-	}
-
-	function removeClass(e, className) {
-		var cls = e.getAttribute("class"),
-			classList = cls? cls.split(" "): [],
-			index;
-		
-		for (var i=1; i<arguments.length; i++) {
-			className = arguments[i];
-			
-			index = classList.indexOf(className);
-			
-			if (index !== -1) {
-				classList.splice(index, 1);
-			}
-		}
-		
-		e.setAttribute("class", classList.join(" "));
-	}
-
-	function hasClass(e, className) {
-		var cls = e.getAttribute("class"),
-			classList = cls? cls.split(" "): [];
-		
-		for (var i=1; i<arguments.length; i++) {
-			if (classList.indexOf(arguments[i]) == -1) {
-				return false;
-			}
-		}
-		
-		return true;
-	}
-
-	function moveDevice(ip, x, y) {
-		var device = top.databases.device[ip],
-			pos = top.databases.position[ip],
-			link = linkData[ip],
+	function moveDevice(id, x, y) {
+		var device = top.databases.device[id],
+			pos = top.databases.position[id],
+			link = linkData[id],
 			data;
 
-		var svgDevice = svgData[ip];
+		var svgDevice = svgData[id];
 		
 		x = Math.round((x + pos.x) /10) *10;
 		y = Math.round((y + pos.y) /10) *10;
@@ -1383,7 +1394,7 @@ if ("display" in top.databases.config) {
 		for (var peerIP in link) {
 			data = link[peerIP];
 		
-			drawLine(x, y, data, data.peer1 === ip);
+			drawLine(x, y, data, data.peer1 === id);
 		}
 		
 		return {
@@ -1407,14 +1418,14 @@ if ("display" in top.databases.config) {
 		labelSvg.setAttribute("y", (y1 *2 + y2) /3);
 	}
 
-	function addLine(ip, pos) {
-		var device = top.databases.device[ip],
+	function addLine(id, pos) {
+		var device = top.databases.device[id],
 			ifEntry = pos.ifEntry,
 			peerList = {},
 			peerPos, peerIP, link, lineSvg,
 			labelSvg;
 		
-		linkData[ip] = peerList;
+		linkData[id] = peerList;
 		
 		for (var peerIP in ifEntry) {
 			peerPos = top.databases.position[peerIP];
@@ -1424,7 +1435,7 @@ if ("display" in top.databases.config) {
 			
 			// peer가 먼저 svg 만들었다면 공유
 			if (linkData[peerIP]) {
-				link = linkData[peerIP][ip];
+				link = linkData[peerIP][id];
 					
 				link.name2 = labelSvg;
 			}
@@ -1437,7 +1448,7 @@ if ("display" in top.databases.config) {
 				lineSvg.setAttribute("y2", peerPos.y);
 				
 				link = {
-					peer1: ip,
+					peer1: id,
 					name1: labelSvg,
 					peer2: peerIP,
 					svg: lineCanvas.appendChild(lineSvg)
@@ -1478,28 +1489,30 @@ if ("display" in top.databases.config) {
 			critical = {},
 			pos;
 		
-		for (var ip in top.databases.device) {
-			pos = top.databases.position[ip];
+		for (var id in top.databases.device) {
+			pos = top.databases.position[id];
 
-			// 특별한 상황(버그)에서 device의 pos 정보가 없을 수 있음
+			// 동기화 안된 node의 pos 정보가 없음
 			if (!pos) {
-				console.log(ip+" 의 position 정보를 얻을수 없어 구성도에 표시할 수 없습니다.");
-				
-				continue;
+				top.databases.position[id] = pos = {
+					x: 0,
+					y: 0,
+					ifEntry: {}
+				};
 			}
 			
 			if (pos.parent === undefined) {
-				addDevice(ip, pos);
-				addLine(ip, pos);
+				addDevice(id, pos);
+				addLine(id, pos);
 			}
 			// upper 그룹일수도 lower 그룹일수도 있음
 			// upper 그룹은 대상이 아님
 			// 모니터링 대상장비 이어야 함
-			else if (pos.parent && ip in top.databases.monitor) {
-				if (top.databases.monitor[ip].shutdown) {
+			else if (pos.parent && device.ip && device.ip in top.databases.monitor) {
+				if (top.databases.monitor[device.ip].shutdown) {
 					shutdown[pos.parent] = true;
 				}
-				else if (top.databases.monitor[ip].critical) {
+				else if (top.databases.monitor[device.ip].critical) {
 					critical[pos.parent] = true;
 				}
 			}
@@ -1519,7 +1532,7 @@ if ("display" in top.databases.config) {
 	}
 	
 	function displayIFName(show) {
-		document.body.classList[show? "add": "remove"]("ifname");
+		window[show? "addClass": "removeClass"](window.body, "ifname");
 	}
 
 	function getIcon(type) {

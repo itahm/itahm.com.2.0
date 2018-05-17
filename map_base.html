@@ -27,12 +27,6 @@ body, input, button {
 	padding: 0; 
 }
 
-nav {
-	position: absolute; top: 0; left: 0;
-	width: 100px; height: 100px;
-	background-color: red;
-}
-
 #map {
 	width: 100%; height: 100%;
 	animation-duration: .5s;
@@ -72,13 +66,10 @@ text {
 	}*/
 }
 
-body.extra #anchor {
-	display: none;
-}
-
 #line text {
 	font-size: 11px;
 	fill: #aaa;
+	cursor: pointer;
 }
 
 #link line {
@@ -256,14 +247,14 @@ function onLeave() {
 	window.isGroup = false;
 }
 
-function deleteIFEntry(ip) {
-	var pos = top.databases.position[ip];
+function deleteIFEntry(id) {
+	var pos = top.databases.position[id];
 	
 	for (var peerIP in pos.ifEntry) {
-		delete top.databases.position[peerIP].ifEntry[ip];
+		delete top.databases.position[peerIP].ifEntry[id];
 	}
 	
-	top.databases.position[ip].ifEntry = {};
+	top.databases.position[id].ifEntry = {};
 	
 	pos.parent = window.group;
 }
@@ -273,8 +264,8 @@ function moveGroup() {
 		deleteIFEntry(window.selected);
 	}
 	
-	for (ip in window.checked) {
-		deleteIFEntry(ip);
+	for (id in window.checked) {
+		deleteIFEntry(id);
 	}
 	
 	window.location.reload();
@@ -289,8 +280,8 @@ function moveSelectedDevice(x, y) {
 		moveAnchor(pos.x, pos.y);
 	}
 	
-	for (var ip in window.checked) {
-		moveDevice(ip, x, y);
+	for (var id in window.checked) {
+		moveDevice(id, x, y);
 	}
 }
 
@@ -304,8 +295,8 @@ function moveSelectedDeviceTo(x, y) {
 		pos.y += y;
 	}
 	
-	for (var ip in window.checked) {
-		pos = top.databases.position[ip];
+	for (var id in window.checked) {
+		pos = top.databases.position[id];
 		
 		pos.x += x;
 		pos.y += y;
@@ -339,13 +330,13 @@ function onDragMove(e) {
 			x = matrix.e;
 			y = matrix.f;
 			
-			window.linkCanvas.classList.add("match");
+			addClass(window.linkCanvas, "match");
 		}
 		else {
 			x += pos.x;
 			y += (pos.y -34);
 			
-			window.linkCanvas.classList.remove("match");
+			removeClass(window.linkCanvas, "match");
 		}
 		
 		window.linkSVG.setAttribute("x2", x);
@@ -402,14 +393,14 @@ function onDragEnd(e) {
 function moveAllDevice(x, y) {
 	var group = top.databases.local.parent, moved;
 	
-	for (var ip in top.databases.device) {
-		pos = top.databases.position[ip];
+	for (var id in top.databases.device) {
+		pos = top.databases.position[id];
 		
 		if (pos.parent !== group) {
 			continue;
 		}
 		
-		moved = moveDevice(ip, x, y);
+		moved = moveDevice(id, x, y);
 		
 		pos.x = moved.x;
 		pos.y = moved.y;
@@ -435,41 +426,38 @@ function onCancelSelect() {
 /**
  * public
  */
-function showSelectedDevice(ip) {
-	var svgDevice = window.svgData[ip];
+function showSelectedDevice(id) {
+	var svgDevice = window.svgData[id];
 	
 	if (svgDevice) {
-		selectDevice(ip, svgDevice);
+		selectDevice(id, svgDevice);
 	}
 }
 
-function onSelectDevice(ip, svgDevice, check) {
+function onSelectDevice(id, svgDevice, check) {
 	if (!check) {
-		return selectDevice(ip, svgDevice);
+		return selectDevice(id, svgDevice);
 	}
 	
-	if (ip === window.selected) {
+	if (id === window.selected) {
 		resetSeleced();
 	}
-	else if (ip in window.checked) {
-		delete window.checked[ip];
+	else if (id in window.checked) {
+		delete window.checked[id];
 		
 		removeClass(svgDevice, "checked");
 	}
 	else {
-		window.checked[ip] = svgDevice;
+		window.checked[id] = svgDevice;
 		
 		addClass(svgDevice, "checked");
 	}
 }
 
-function selectDevice(ip, svgDevice) {
-	if (document.body.classList.contains("extra") || window.selected == ip) {
-		return;
-	}
-	
-	var monitor = top.databases.monitor[ip],
-		pos = top.databases.position[ip];
+function selectDevice(id, svgDevice) {
+	var device = top.databases.device[id],
+		monitor = device.ip && top.databases.monitor[device.ip],
+		pos = top.databases.position[id];
 	
 	if (window.selected) {
 		removeClass(window.svgData[window.selected], "checked");
@@ -478,7 +466,7 @@ function selectDevice(ip, svgDevice) {
 		document.body.classList.add("selected");
 	}
 	
-	window.selected = ip;
+	window.selected = id;
 	
 	resetChecked();
 	
@@ -517,27 +505,26 @@ function drawLine(x, y, data, direct) {
 		x2 = x;
 		y2 = y;
 	}
-	
-	data.name1.setAttribute("x", (x1 *2 + x2) /3);
-	data.name1.setAttribute("y", (y1 *2 + y2) /3);
-	
-	data.name2.setAttribute("x", (x2 *2 + x1) /3);
-	data.name2.setAttribute("y", (y2 *2 + y1) /3);
 
+	if (data.name1) {
+		data.name1.setAttribute("x", (x1 *2 + x2) /3);
+		data.name1.setAttribute("y", (y1 *2 + y2) /3);
+	}
+	
+	if (data.name2) {
+		data.name2.setAttribute("x", (x2 *2 + x1) /3);
+		data.name2.setAttribute("y", (y2 *2 + y1) /3);
+	}
 }
 
-function addDevice(ip, pos) {
-	var device = top.databases.device[ip],
+function addDevice(id, pos) {
+	var device = top.databases.device[id],
 		svgDevice = document.createElementNS(svgNS, "g"),
 		svgIcon = document.createElementNS(svgNS, "image"),
 		svgBG = document.createElementNS(svgNS, "circle"),
 		svgLabel = document.createElementNS(svgNS, "text"),
 		svgAddr = document.createElementNS(svgNS, "tspan"),
 		svgName = document.createElementNS(svgNS, "tspan");
-		
-	if (!pos) {
-		top.databases.position[ip] = pos = {x: 0, y: 0};
-	}
 	
 	svgIcon.setAttribute("x", window.ICON_SIZE *-1 /2);
 	svgIcon.setAttribute("y", window.ICON_SIZE *-1 /2);
@@ -549,13 +536,13 @@ function addDevice(ip, pos) {
 	svgBG.setAttribute("cy", 0);
 	
 	svgDevice.setAttribute("transform", "translate("+ pos.x +","+ pos.y +")");
-	svgDevice.onclick = onClickDevice.bind(svgDevice, ip);
-	svgDevice.addEventListener("link", onLink.bind(undefined, ip));
+	svgDevice.onclick = onClickDevice.bind(svgDevice, id);
+	svgDevice.addEventListener("link", onLink.bind(undefined, id));
 	
 	if (device.group) {
-		svgDevice.onmouseenter = onEnter.bind(svgDevice, ip);
+		svgDevice.onmouseenter = onEnter.bind(svgDevice, id);
 		svgDevice.onmouseleave = onLeave.bind(svgDevice);
-		svgDevice.ondblclick = onSelectGroup.bind(svgDevice, ip);
+		svgDevice.ondblclick = onSelectGroup.bind(svgDevice, id);
 	}
 	
 	svgName.textContent = device.name;
@@ -576,18 +563,20 @@ function addDevice(ip, pos) {
 	
 	window.deviceCanvas.appendChild(svgDevice);
 	
-	window.svgData[ip] = svgDevice;
+	window.svgData[id] = svgDevice;
 	
-	drawDevice(ip);
+	drawDevice(id);
+	
+	addLine(id, pos);
 }
 
-function drawDevice(ip) {
-	var device = top.databases.device[ip],
-		svgDevice = window.svgData[ip],
+function drawDevice(id) {
+	var device = top.databases.device[id],
+		svgDevice = window.svgData[id],
 		svgIcon = svgDevice.querySelector("image"),
-		pos = top.databases.position[ip],
+		pos = top.databases.position[id],
 		icon = getIcon(device.type || "unknown"),
-		monitor = top.databases.monitor[ip];
+		monitor = device.ip && top.databases.monitor[device.ip];
 	
 	removeClass(svgDevice, "shutdown", "critical");
 	
@@ -658,13 +647,13 @@ function hasClass(e, className) {
 	return true;
 }
 
-function moveDevice(ip, x, y) {
-	var device = top.databases.device[ip],
-		pos = top.databases.position[ip],
-		link = window.linkData[ip],
+function moveDevice(id, x, y) {
+	var device = top.databases.device[id],
+		pos = top.databases.position[id],
+		link = window.linkData[id],
 		data;
 
-	var svgDevice = window.svgData[ip];
+	var svgDevice = window.svgData[id];
 	
 	x = Math.round((x + pos.x) /10) *10;
 	y = Math.round((y + pos.y) /10) *10;
@@ -674,7 +663,7 @@ function moveDevice(ip, x, y) {
 	for (var peerIP in link) {
 		data = link[peerIP];
 	
-		drawLine(x, y, data, data.peer1 === ip);
+		drawLine(x, y, data, data.peer1 === id);
 	}
 	
 	return {
@@ -683,14 +672,14 @@ function moveDevice(ip, x, y) {
 	};
 }
 
-function onClickDevice(ip, e) {
+function onClickDevice(id, e) {
 	e.stopPropagation();
 	
 	if (window.isDragging) {
 		window.isDragging = false;
 	}
 	else {
-		onSelectDevice(ip, this, e.ctrlKey);
+		onSelectDevice(id, this, e.ctrlKey);
 	}
 }
 
@@ -713,46 +702,47 @@ function resetSeleced() {
 }
 
 function resetChecked() {
-	for (var ip in window.checked) {
-		removeClass(window.checked[ip], "checked");
+	for (var id in window.checked) {
+		removeClass(window.checked[id], "checked");
 	}
 	
 	window.checked = {};
 }
 
-function createLabel(port, x1, y1, x2, y2) {
-	var labelSvg = document.createElementNS(svgNS, "text");
-	
-	labelSvg.textContent = port && port.name || "";
-	
-	moveLabel(labelSvg, x1, y1, x2, y2);
-	
-	return labelSvg;
+function showStatus(index) {
+	top.showStatus();
 }
-	
+
 function moveLabel(labelSvg, x1, y1, x2, y2) {
 	labelSvg.setAttribute("x", (x1 *2 + x2) /3);
 	labelSvg.setAttribute("y", (y1 *2 + y2) /3);
 }
 
-function addLine(ip, pos) {
-	var device = top.databases.device[ip],
+function addLine(id, pos) {
+	var device = top.databases.device[id],
 		ifEntry = pos.ifEntry,
 		peerList = {},
-		peerPos, peerIP, link, lineSvg,
-		labelSvg;
+		peerPos, peerIP, link, lineSvg, port, labelSvg;
 	
-	window.linkData[ip] = peerList;
+	window.linkData[id] = peerList;
 	
 	for (var peerIP in ifEntry) {
 		peerPos = top.databases.position[peerIP];
 		
-		// TODO 라벨이 없는 경우에는 그려주지 않는것이 성능에 유리할것.
-		labelSvg = createLabel(ifEntry[peerIP], pos.x, pos.y, peerPos.x, peerPos.y);
+		port = ifEntry[peerIP];
+		
+		if (port) {
+			labelSvg = document.createElementNS(svgNS, "text");
+			
+			labelSvg.textContent = port.name;
+			labelSvg.onclick = top.showStatus.bind(undefined, id, "throughput", port.index);
+			
+			moveLabel(labelSvg, pos.x, pos.y, peerPos.x, peerPos.y);
+		}
 		
 		// peer가 먼저 svg 만들었다면 공유
 		if (window.linkData[peerIP]) {
-			link = linkData[peerIP][ip];
+			link = linkData[peerIP][id];
 				
 			link.name2 = labelSvg;
 		}
@@ -765,7 +755,7 @@ function addLine(ip, pos) {
 			lineSvg.setAttribute("y2", peerPos.y);
 			
 			link = {
-				peer1: ip,
+				peer1: id,
 				name1: labelSvg,
 				peer2: peerIP,
 				svg: lineCanvas.appendChild(lineSvg)
@@ -773,7 +763,9 @@ function addLine(ip, pos) {
 		}
 		
 		// label이 선보다 위에 그려지도록 나중에 붙여줌
-		lineCanvas.appendChild(labelSvg);
+		if (port) {
+			lineCanvas.appendChild(labelSvg);
+		}
 		
 		peerList[peerIP] = link;
 	}
@@ -795,52 +787,39 @@ function setGroupStatus(id, status) {
 		if (id in top.databases.position) {
 			setGroupStatus(top.databases.position[id].parent, status);
 		}
-		else {
-			console.log(id+" 의 position 정보를 얻을수 없어 구성도에 표시할 수 없습니다.");
-		}
 	}
 }
 
-function getTopGroup(id) {
-	if (id in window.svgData) {
-		return window.svgData[id];
-	}
-	
-	if (top.databases.position[id].parent) {
-		return getTopGroup(top.databases.position[id].parent);
-	}
-	
-	return undefined;
-}
-
-function initialize(extra) {
+function initialize() {
 	var group = top.databases.local.parent,
 		shutdown = {},
 		critical = {},
-		pos;
+		device, pos;
 	
-	for (var ip in top.databases.device) {
-		pos = top.databases.position[ip];
+	for (var id in top.databases.device) {
+		device = top.databases.device[id];
+		pos = top.databases.position[id];
 
-		// 특별한 상황(버그)에서 device의 pos 정보가 없을 수 있음
+		// 동기화 안된 node의 pos 정보가 없음
 		if (!pos) {
-			console.log(ip+" 의 position 정보를 얻을수 없어 구성도에 표시할 수 없습니다.");
-			
-			continue;
+			top.databases.position[id] = pos = {
+				x: 0,
+				y: 0,
+				ifEntry: {}
+			};
 		}
 		
 		if (pos.parent === group) {
-			addDevice(ip, pos);
-			addLine(ip, pos);
+			addDevice(id, pos);
 		}
 		// upper 그룹일수도 lower 그룹일수도 있음
 		// upper 그룹은 대상이 아님
 		// 모니터링 대상장비 이어야 함
-		else if (pos.parent && ip in top.databases.monitor) {
-			if (top.databases.monitor[ip].shutdown) {
+		else if (pos.parent && device.ip && device.ip in top.databases.monitor) {
+			if (top.databases.monitor[device.ip].shutdown) {
 				shutdown[pos.parent] = true;
 			}
-			else if (top.databases.monitor[ip].critical) {
+			else if (top.databases.monitor[device.ip].critical) {
 				critical[pos.parent] = true;
 			}
 		}
@@ -854,24 +833,20 @@ function initialize(extra) {
 		setGroupStatus(id, "critical");
 	}
 	
-	var ip = top.databases.local.selected;
+	var id = top.databases.local.selected;
 	
-	if (ip) {
-		var pos = window.top.databases.position[ip];
+	if (id) {
+		var pos = window.top.databases.position[id];
 		
 		moveAllDevice(- pos.x, - pos.y);
-		showSelectedDevice(ip);
-	}
-	
-	if (extra) {
-		document.body.classList.add("extra");
+		showSelectedDevice(id);
 	}
 	
 	top.databases.local.selected = undefined;
 }
 
-function onLink(ip, e) {
-	onEditLine(ip, e.detail.peer);
+function onLink(id, e) {
+	onEditLine(id, e.detail.peer);
 }
 
 function displayIFName(show) {
@@ -895,11 +870,11 @@ function getIcon(type) {
 })(window.print);
 
 //abstract
-function onEditDevice(ip) {	
+function onEditDevice(id) {	
 }
 
 //abstract
-function onEditLine(ip, peerIP) {
+function onEditLine(id, peerID) {
 	
 }
 
@@ -908,13 +883,16 @@ function onSelectGroup(id) {
 }
 
 //abstract
-function onShowChart(ip) {
+function onShowChart(id) {
 }
 
 //abstract
 function onShowAlarm(ip) {
 }
-		
+/*
+function resetStatus(id) {
+	
+}*/
 		</script>
 	</head>
 	
@@ -959,10 +937,6 @@ function onShowAlarm(ip) {
 		<script src="js/ITAhM.js"></script>
 		<script src="js/Draggable.js"></script>
 		<script>
-
-if (sessionStorage.level == 0) {
-	document.body.classList.add("root");
-}
 		
 var svgNS = "http://www.w3.org/2000/svg",
 	xlinkNS = "http://www.w3.org/1999/xlink",
@@ -972,7 +946,6 @@ var svgNS = "http://www.w3.org/2000/svg",
 
 var mapCanvas = document.getElementById("map"),
 	deviceCanvas = document.getElementById("device"),
-	//toolCanvas = document.getElementById("tool"),
 	lineCanvas = document.getElementById("line"),
 	transform = document.getElementById("transform").transform.baseVal,
 	linkCanvas = document.getElementById("link"),
@@ -989,6 +962,10 @@ var mapCanvas = document.getElementById("map"),
 	checked = {},
 	scale = 1,
 	isDragging = false;
+
+if (top.databases.local.level === 0) {
+	document.body.classList.add("root");
+}
 
 new Draggable(mapCanvas);
 
@@ -1008,7 +985,7 @@ chartAnchor.onclick = function (e) {
 };
 
 alarmAnchor.onclick = function (e) {
-	onShowAlarm(window.selected);
+	onShowAlarm(top.databases.device[window.selected].ip);
 	
 	e.stopPropagation();
 };

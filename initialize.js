@@ -24,7 +24,6 @@ function sendRequest(database) {
 	
 	xhr.open("POST", url, true);
 	xhr.withCredentials = true;
-	xhr.timeout = 12000;
 	xhr.onloadend = onComplete.bind(xhr, database);
 	xhr.send(JSON.stringify(request));
 }
@@ -48,7 +47,10 @@ function onComplete(database) {
 		}
 	}
 	else {
-		postMessage(null);
+		postMessage({
+			type: "error",
+			status: this.status
+		});
 		
 		close();
 	}
@@ -59,7 +61,6 @@ function listen() {
 
 	xhr.open("POST", url, true);
 	xhr.withCredentials = true;
-	xhr.timeout = 60000;
 	xhr.onload = onEvent;
 	xhr.onerror = onError;
 	xhr.ontimeout = listen;
@@ -71,6 +72,7 @@ function onError(e) {
 
 	postMessage({
 		type: "error",
+		status: 0
 	});
 }
 

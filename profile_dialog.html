@@ -59,22 +59,29 @@ div.table li:last-child {
 	flex: 3;
 }
 
-body:not(.v2c) .v2c,
-body:not(.v3) .v3 {
+body.v3 .version:not(.v3),
+body:not(.v3) .version.v3 {
 	display: none;
 }
-/*
-body.v2c .v2c,
-body.v3 .v3 {
+
+footer {
 	display: flex;
-}
-*/
-footer{
-	display: flex;
+	margin-top: 1em;
 }
 
-footer input {
+footer> input {
 	flex: 1;
+	border-radius: 1.2em;
+	background-color: #0084ff;
+	color: #fff;
+	border: .2em solid transparent;
+	padding: .5em;
+}
+
+footer> input:hover {
+	background-color: #fff;
+	color: #0084ff;
+	border-color: #0084ff;
 }
 
 body:not(.removable) .remove,
@@ -108,30 +115,30 @@ body:not(.warning) .warning {
 					<ul>
 						<li>snmp version 
 						<li>
-							<label><input type="radio" value="v1" name="version" disabled>v1</label>
+							<label><input type="radio" value="v1" name="version">v1</label>
 							<label><input type="radio" value="v2c" name="version" checked>v2c</label>
 							<label><input type="radio" value="v3" name="version">v3</label>
 					</ul>
-					<ul class="v2c">
+					<ul class="version">
 						<li>community 
 						<li>
 							<input type="text" name="community" class="table text"
 								placeholder="snmp community string">
 					</ul>
-					<ul class="v3">
+					<ul class="version v3">
 						<li>user 
 						<li>
 							<input type="text" name="user" class="table text"
 								placeholder="user name">
 					</ul>
-					<ul class="v3">
+					<ul class="version v3">
 						<li><div>authentication</div>
 							<label><input type="checkbox" name="en_auth">MD5</label>
 						<li>
 							<input type="password" name="authentication" class="table text"
 								placeholder="user password" disabled>
 					</ul>
-					<ul class="v3">
+					<ul class="version v3">
 						<li><div>privacy</div>
 							<label><input type="checkbox" name="en_priv">DES</label>
 						<li>
@@ -142,17 +149,13 @@ body:not(.warning) .warning {
 				<label class="remove"><input type="checkbox" name="remove" disabled>remove</label>
 				<i class="warning">사용중인 프로파일은 삭제할 수 없습니다.</i>
 				<footer>
-					<input type="reset" class="r_button" value="cancel">
-					<input type="submit" class="r_button" value="apply" disabled>
+					<input type="reset" value="cancel">
+					<input type="submit" value="apply" disabled>
 				</footer>
 			</form>
 		</div>
 		
 		<script>
-	
-if (top === window) {
-	throw "";
-}
 
 var form = document.querySelector("form"),
 	version = document.querySelectorAll("input[name=version]");
@@ -182,13 +185,12 @@ form.elements["en_priv"].onclick = function () {
 	enableElement(window.form.elements["privacy"], this.checked);
 };
 
-if (sessionStorage.level == 0) {
+if (top.databases.local.level === 0) {
 	form.addEventListener("submit", onApply);
 	form.elements["remove"].onclick = onRemove;
 	form.elements["remove"].disabled = false;
 	document.querySelector("input[type=submit]").disabled = false;
 }
-
 
 /**
  * callback method
@@ -308,10 +310,7 @@ function initialize(name) {
 		form.elements["udp"].value = profile.udp;
 		document.querySelector("input[name=version][value="+ profile.version +"]").checked = true;
 		
-		if (profile.version === "v2c") {
-			form.elements["community"].value = profile.community;
-		}
-		else if (profile.version === "v3") {
+		if (profile.version === "v3") {
 			form.elements["user"].value = profile.user;
 			
 			if ("md5" in profile) {
@@ -326,6 +325,9 @@ function initialize(name) {
 				}
 			}
 		}
+		else {
+			form.elements["community"].value = profile.community;
+		}
 		
 		document.body.classList.add(profile.version);
 		
@@ -339,16 +341,14 @@ function initialize(name) {
 		document.querySelector("input[type=submit]").disabled = true;
 	}
 	else {
-		document.body.classList.add("v2c");
-		
 		form.elements["name"].focus();
 	}
 }
 
 function isIdleProfile(name) {
-	var monitorData = top.databases.monitor;
+	const monitorData = top.databases.monitor;
 
-	for (var ip in monitorData) {
+	for (let ip in monitorData) {
 		monitor = monitorData[ip];
 		
 		if (monitor.profile === name) {

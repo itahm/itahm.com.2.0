@@ -31,25 +31,23 @@ h2 {
 
 nav {
 	position: absolute; top: 1em; right: 1em;
+	display: none;
 }
 
 nav img {
 	cursor: pointer;
 }
 
-article section:last-child {
-	flex: 1;
-}
-
 section {
-	padding: 5px;
+	padding: 5px; margin: 5px;
 	border: 3px solid #0084ff;
 	border-radius: 5px;
-	margin: 5px;
+	background-color: #424242;
 }
 
-section:hover:not(.information) {
-	background-color: #777;
+section:hover:not(.readonly) {
+	border-color: #ddd;
+	border-style: dotted;
 	cursor: pointer;
 }
 
@@ -71,17 +69,8 @@ div.memory +div {
 	display: inline-block;
 }
 
-div.memory.orange svg.bar {
-	border-color: orange;
-}
-
-div.memory.red svg.bar {
-	border-color: #f00;
-}
-
-
 rect[height].bar {
-	animation: bar 1s;
+	animation: vbar 1s;
 }
 
 #memory_total {
@@ -97,25 +86,43 @@ div.bar::after {
 	font-weight: bold;
 }
 
-div.memory.green rect.bar {
-	fill: #0f0;
+.bar.memory {
+	border-radius: 50%;
+	border: 3px solid transparent;
+	box-sizing: border-box;
+	width: 100px; height: 100px;
+	overflow: hidden;
 }
 
-div.memory.orange rect.bar {
-	fill: orange;
+.bar.memory >div {
+	position: absolute; bottom: 0;
+	width: 100%;
+	animation: vbar 1s;
+	transform-origin: bottom;
 }
 
-div.memory.red rect.bar {
-	fill: #f00;
+.bar.memory.green {
+	border-color: #0f0;
 }
 
-@keyframes bar {
-	0% {
-		transform: scale(1, 0);
-	}
-	100% {
-		transform: scale(1, 1);
-	}
+.bar.memory.green >div {
+	background-image: linear-gradient(to top, rgba(0, 255, 0, 0.5), #0f0);
+}
+
+.bar.memory.orange {
+	border-color: #ffa500;
+}
+
+.bar.memory.orange >div {
+	background-image: linear-gradient(to top, rgba(255, 165, 0, 0.5), #ffa500);
+}
+
+.bar.memory.red {
+	border-color: #f00;
+}
+
+.bar.memory.red >div {
+	background-image: linear-gradient(to top, rgba(255, 0, 0, 0.5), #f00);
 }
 
 .processor_item {
@@ -182,11 +189,75 @@ ul {
 	margin: 0; padding: 0;
 }
 
-section.storage li,
-section.throughput li {
+section {
+	white-space: nowrap;
+	flex: 1 1 0;
 	text-align: center;
-	padding: .5em; margin: 3px;
+}
+
+section.response_time {
+	display: flex; flex-direction: column;
+	flex: 1 1 200px;
+	min-height: 150px;
+}
+
+section.memory {
+	flex: 1 1 200px;
+	text-align: center;
+}
+
+div.tbody {
+	text-align: initial;
+}
+
+/*
+interface, storage 공통
+*/
+.item {
+	display: flex;
+	align-items: center;
+	margin: 3px 0;
+}
+
+.item >li,
+.title >li {
 	flex: 1;
+}
+
+.item >li {
+	padding: 3px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.item >li.bar {
+	border: 3px solid #0f0;
+	padding: 0;
+	box-sizing: border-box;
+	position: relative;
+}
+
+.item >li.bar >div {
+	display: block;
+	height: 2em;
+	background: linear-gradient(to right, rgba(0, 255, 0, 0.5), #0f0);
+}
+
+.item.red >li {
+	border-color: #f00;
+}
+
+.item.red >li >div {
+	background: linear-gradient(to right, rgba(255, 0, 0, 0.5), #f00);
+}
+
+.item.orange >li {
+	border-color: #ffa500;
+}
+
+.item.orange >li >div {
+	background: linear-gradient(to right, rgba(255, 165, 0, 0.5), #ffa500);
 }
 
 .title {
@@ -194,113 +265,86 @@ section.throughput li {
 	margin-bottom: 3px;
 }
 
-.title.storage .usage {
-	flex: 2;
-}
-
-.title li {
-	font-weight: bold;
-}
-
-section.storage .bar {
-	position: relative;
-	border: 3px solid #ddd;
-	border-radius: 1em;
-	overflow: hidden;
-	box-sizing: border-box;
-}
-
-section.storage .color {
-	position: absolute; top: 0; left: 0;
-	width: 0; height: 100%;
-	transition: width .5s ease-out;
-}
-
-section.response_time {
-	min-width: 250px;
-	min-height: 150px;
-}
-
-.i_face.item {
-	display: flex;
-}
-
-.i_face.item> li {
-	text-align: center;
-	padding: .5em; margin: 3px;
+.title >li {
 	flex: 1;
-	overflow: hidden;
+	font-weight: bold;
+	padding: 0.5em;
+	text-align: center;
 }
 
-.item li {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+.item >li.bar::after {
+	content: attr(data-value);
+	position: absolute; top: 50%; left: 50%;
+	transform: translateX(-50%) translateY(-50%);
 }
 
+.item >li.bar >div {
+	animation: hbar 1s;
+	transform-origin: left;
+}
+
+/*
+interface
+*/
 .i_face.item li:last-child {
 	display: flex;
 }
 
-.i_face.item li:first-child {
+.i_face.item >li:first-child {
 	flex: .2;
+	position: relative;
+	overflow: visible;
 }
 
 .i_face.item:not(.no_select) li:last-child:hover {
 	background-color: #555;
 }
 
-.i_face.item li:last-child div{
+.i_face.item >li:last-child div{
 	flex: 1;
 }
 
-.i_face.item li:first-child::after {
-	content: url("img/ball_green.png");
+.i_face.item >li:first-child::after {
+	content: "";
+	position: absolute; top: 50%; left: 50%;
+	display: inline-block;
+	width: 1em; height: 1em;
+	border-radius: 50%;
+	transform: translateX(-50%) translateY(-50%);
+	background-color: #0f0;
 }
 
 .i_face.item.shutdown li:first-child::after {
-	content: url("img/ball_orange.png"); 
+	background-color: #f00; 
+}
+
+.i_face.item.disabled li:first-child::after {
+	background-color: #ddd; 
 }
 
 .i_face.item.disabled {
 	color: #aaa;
 }
 
-.i_face.item.disabled li:first-child::after {
-	content: url("img/ball_gray.png"); 
-}
-
-.title.throughput li:nth-child(1),
+.title.throughput >li:nth-child(1),
 #i_face li:nth-child(1) {
 	flex: .2;
 }
 
-.title.throughput li:nth-child(5),
-.title.throughput li:nth-child(6) {
+.title.throughput >li:nth-child(6),
+.title.throughput >li:nth-child(7) {
 	flex: 2;
 }
 
-.title li {
-	font-weight: bold;
+/*
+storage
+*/
+.storage.title >li {
+	flex: 1;
 }
 
-#i_face .bar {
-	position: relative;
-	border: 3px solid #ddd;
-	border-radius: 1em;
-	box-sizing: border-box;
-}
-
-#i_face .bar::after {
-	content: attr(data-value);
-	position: absolute; top: 50%; left: 50%;
-	transform: translateX(-50%) translateY(-50%);
-}
-
-#i_face .color {
-	position: absolute; top: 0; left: 0;
-	height: 100%;
-	transition: width .5s ease-out;
+.storage.title >li.usage {
+	flex: 2;
 }
 
 /**/
@@ -315,20 +359,8 @@ section.response_time {
 	cursor: pointer;
 }
 
-.i_face.item,
-.storage.item,
 .title {
 	display: flex;
-}
-
-section.response_time {
-	display: flex; flex-direction: column;
-}
-
-.storage.item .bar::after {
-	content: attr(data-value);
-	position: absolute; top: 50%; left: 50%;
-	transform: translateX(-50%) translateY(-50%);
 }
 
 #response {
@@ -412,26 +444,30 @@ div.frame {
 	flex-direction: column;
 }
 
-div.frame header {
+div.frame >header {
 	text-align: right;
 	background-color: #ccc;
 	border-bottom: 1px solid #fff;
 	color: #777;
 }
 
-div.frame header span {
+div.frame >header span {
 	display: inline-block;
 	padding: 3px 10px;
+	font-weight: bold;
 }
 
-div.frame header span:hover {
+div.frame >header span:hover {
 	cursor: default;
 	color: #fff;
 	background-color: #0084ff;
 }
 
-div.frame iframe {
+div.frame >div {
 	flex: 1;
+}
+
+div.frame >div >iframe {
 	width: 100%; height: 100%;
 	border: none;
 }
@@ -444,20 +480,16 @@ div.frame iframe {
 	border-radius: 50%;
 	position: relative;
 	overflow: hidden;
+	display: inline-block;
 }
 
 #process::after {
-	font-size: 1em;
+	font-size: 2em;
 	transition: font-size 0.3s ease-in;
 	font-weight: bold;
 	content: attr(data-value);
 	position: absolute; top: 50%; left: 50%;
 	transform: translateX(-50%) translateY(-50%);
-	
-}
-
-#process[data-value]::after {
-	font-size: 2em;
 }
 
 body:not(.processor) section.processor,
@@ -465,10 +497,39 @@ body:not(.storage) section.storage,
 body:not(.memory) section.memory,
 body:not(.throughput) section.throughput,
 body:not(.process) section.process,
-body:not(.frame) .frame {
+body:not(.frame) .frame,
+body.frame article,
+body:not(.debug) .title.throughput >li:nth-of-type(4),
+body:not(.debug) .item.i_face >li:nth-of-type(4) {
 	display: none;
 }
 
+@keyframes font {
+	0% {
+		transform: translateX(-50%) translateY(-50%) scale(0.5, 0.5);
+	}
+	100% {
+		transform: translateX(-50%) translateY(-50%) scale(1.2, 1.2);
+	}
+}
+
+@keyframes vbar {
+	0% {
+		transform: scale(1, 0);
+	}
+	100% {
+		transform: scale(1, 1);
+	}
+}
+
+@keyframes hbar {
+	0% {
+		transform: scale(0, 1);
+	}
+	100% {
+		transform: scale(1, 1);
+	}
+}
 		</style>
 		
 		<script>
@@ -488,7 +549,7 @@ function createProcGauge(value) {
 	
 	circularBar.dataset.value = value +"%";
 	
-	setTimeout(function () {
+	setTimeout(function() {
 		circularBar.children[0].childNodes[1].childNodes[3].setAttribute("stroke-dashoffset", 2* Math.PI*(1 - value /100)*45);
 	}, 500);
 	
@@ -497,23 +558,36 @@ function createProcGauge(value) {
 
 function createStorageGuage(used, size, label) {
 	var clone = storageGauge.cloneNode(true),
-		usage = (100* used / size).toFixed(2) +"%";;
+		usage = (100* used / size).toFixed(2);
+	
+	if (usage > 90) {
+		clone.classList.add("red");
+	}
+	else if (usage > 70) {
+		clone.classList.add("orange");
+	}
+	else {
+		clone.classList.add("green");
+	}
+	
+	usage = usage +"%";
 	
 	clone.children[0].textContent = label;
 	clone.children[1].textContent = ITAhM.util.toBytesString(size);
 	clone.children[2].textContent = ITAhM.util.toBytesString(used);
 	clone.children[3].dataset.value = usage;
 	
-	setTimeout(function () {
-		clone.children[3].children[0].style.width = usage;
-	}, 500);
+	clone.children[3].children[0].style.width = usage;
 	
 	return clone;
 }
 	
-function createIFaceGuage(admin, oper, index, name, descr, alias, bandwidth, inBPS, outBPS, inErr, outErr) {
-	var clone = iFaceGauge.cloneNode(true),
-		usageIn, usageOut;
+function createIFaceGuage(admin, oper, index, name, descr, alias, type, bandwidth, inBPS, outBPS, inErr, outErr) {
+	const clone = iFaceGauge.cloneNode(true),
+		barIn = clone.children[7],
+		barOut = clone.children[8];
+	
+	let usageIn, usageOut;
 	
 	if (admin != 1) {
 		clone.classList.add("disabled");
@@ -525,30 +599,46 @@ function createIFaceGuage(admin, oper, index, name, descr, alias, bandwidth, inB
 	usageIn = 100* inBPS / bandwidth;
 	usageOut = 100* outBPS / bandwidth;
 	
-	usageIn = (isNaN(usageIn)? 0: usageIn).toFixed(2) +"%";
-	usageOut = (isNaN(usageOut)? 0: usageOut).toFixed(2) +"%";
+	usageIn = (isNaN(usageIn)? 0: usageIn).toFixed(2);
+	usageOut = (isNaN(usageOut)? 0: usageOut).toFixed(2);
+	
+	if (usageIn > 90) {
+		barIn.classList.add("red");
+	}
+	else if (usageIn > 70) {
+		barIn.classList.add("orange");
+	}
+	
+	if (usageOut > 90) {
+		barOut.classList.add("red");
+	}
+	else if (usageOut > 70) {
+		barOut.classList.add("orange");
+	}
+	
+	usageIn = usageIn +"%";
+	usageOut = usageOut +"%";
 	
 	clone.children[1].textContent = name;
 	clone.children[2].textContent = alias;
-	clone.children[3].textContent = ITAhM.util.toBPSString(bandwidth);
-	clone.children[4].textContent = ITAhM.util.toBPSString(inBPS);
-	clone.children[5].textContent = ITAhM.util.toBPSString(outBPS);		
-	clone.children[6].dataset.value = usageIn; 
-	clone.children[7].dataset.value = usageOut;
-	clone.children[8].children[0].textContent = Math.round(inErr /10);
-	clone.children[8].children[1].textContent = Math.round(outErr /10);
+	clone.children[3].textContent = type + "("+ ITAhM.snmp.ifType[type] +")";
+	clone.children[4].textContent = ITAhM.util.toBPSString(bandwidth);
+	clone.children[5].textContent = ITAhM.util.toBPSString(inBPS);
+	clone.children[6].textContent = ITAhM.util.toBPSString(outBPS);
+	barIn.dataset.value = usageIn; 
+	barOut.dataset.value = usageOut;
+	clone.children[9].children[0].textContent = Math.round(inErr /10);
+	clone.children[9].children[1].textContent = Math.round(outErr /10);
 	
-	setTimeout(function () {
-		clone.children[6].children[0].style.width = usageIn;
-		clone.children[7].children[0].style.width = usageOut;
-	}, 500);
+	barIn.children[0].style.width = usageIn;
+	barOut.children[0].style.width = usageOut;
 	
 	clone.title = descr;
 	
 	if (bandwidth > 0) {
-		clone.onclick = onSelectResource.bind(undefined, "throughput", index);
+		clone.onclick = onSelectResource.bind(window, "throughput", index);
 		
-		clone.children[8].onclick = function (index, e) {
+		clone.children[9].onclick = function (index, e) {
 			onSelectResource("error", index);
 			
 			e.stopPropagation();
@@ -564,7 +654,7 @@ function createIFaceGuage(admin, oper, index, name, descr, alias, bandwidth, inB
 function initialize() {
 	var entry;
 	
-	document.title = window.ip + "["+ window.snmp.sysName +"]";
+	document.title = window.ip + window.snmp.sysName? (" ["+ window.snmp.sysName +"]"): "";
 	
 	document.getElementById("reset").onclick = function () {
 		sendRequest({
@@ -572,7 +662,7 @@ function initialize() {
 			extra: "reset",
 			ip: window.ip
 		}, function () {
-			parent.location.reload();
+			window.location.reload();
 		});
 	};
 	
@@ -582,56 +672,17 @@ function initialize() {
 	document.getElementById("sys_enterprise").title = window.snmp.sysObjectID;
 	document.getElementById("ip").textContent = window.ip;
 	document.getElementById("failure").textContent = 100 - window.snmp.failure;
-	document.getElementById("last_response").textContent = (function (lastResponse) {
-		if (!lastResponse) {
-			return "";
-		}
-		
-		var 
-			date = new Date(lastResponse),
-			text = date.getFullYear() +"-",
-			month = date.getMonth() +1,
-			d = date.getDate(),
-			h = date.getHours(),
-			m = date.getMinutes()
-			s = date.getSeconds();
-		
-		if (month < 10) {
-			text += "0";
-		}
-		
-		text += (month +"-");
-		
-		if (d < 10) {
-			text += "0";
-		}
-		
-		text += (d +" ");
-		
-		if (h < 10) {
-			text += "0";
-		}
-		
-		text += (h +":");
-		
-		if (m < 10) {
-			text += "0";
-		}
-		
-		text += (m +":");
-		
-		if (s < 10) {
-			text += "0";
-		}
-		
-		return text + s;
-	})(window.snmp.lastResponse);
+	document.getElementById("last_response").textContent = toDateString(window.snmp.lastResponse);
 	
-	if (databases.monitor[window.ip].shutdown || window.snmp.failure === 100) {
+	if (window.databases.monitor[window.ip].shutdown || window.snmp.failure === 100) {
 		document.body.classList.add("shutdown");
 	}
 	else {
-		document.getElementById("realtime_response").src = "realtime_response.html"
+		window.rtFrame.onload = function () {
+			this.contentWindow.initialize(window.ip);
+		};
+		
+		window.rtFrame.src = "realtime_response.html"
 	}
 	
 	entry = window.snmp.hrProcessorEntry;
@@ -639,9 +690,7 @@ function initialize() {
 		initProcessor(entry[index]);
 	}
 	
-	document.querySelector("section.processor").onclick = function () {
-		onSelectResource("processor");
-	};
+	document.querySelector("section.processor").onclick = onSelectResource.bind(window, "processor");
 	
 	entry = window.snmp.hrStorageEntry;
 	for (var index in entry) {
@@ -650,7 +699,7 @@ function initialize() {
 	
 	entry = window.snmp.ifEntry;
 	for (var index in entry) {
-		initIFace(entry[index], index);
+		initIFace(entry[index], index, window.device.ifSpeed && window.device.ifSpeed[index]);
 	}
 	
 	if ("hrSWRunName" in window.snmp && Object.keys(window.snmp.hrSWRunName).length > 0) {
@@ -661,6 +710,20 @@ function initialize() {
 	}
 	
 	document.body.classList.remove("loading");
+}
+
+function toDateString(millis) {
+	var date = new Date(millis),
+		ar = [date.getFullYear()],
+		ymd = [date.getMonth() +1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds()];
+	
+	for (let i=0, _i=ymd.length, d; i<_i; i++) {
+		d = ymd[i];
+		
+		ar[ar.length] = d < 10? "0": ""+ d;
+	}
+	
+	return ar[0] +"-"+ ar[1] +"-"+ ar[2] +" "+ ar[3] +":"+ ar[4] +":"+ ar[5];
 }
 
 function initProcessor(load) {
@@ -679,9 +742,7 @@ function parseStorage(storage, index) {
 		break;
 	case 2:
 		initMemory(storage);
-		document.querySelector("section.memory").onclick = function () {
-			onSelectResource("memory", index);
-		};
+		document.querySelector("section.memory").onclick = onSelectResource.bind(window, "memory", index);
 		
 		return true;
 	}
@@ -693,9 +754,7 @@ function initStorage(storage, index) {
 	storageArea.appendChild(
 		createStorageGuage(storage.hrStorageUsed * storage.hrStorageAllocationUnits
 			, storage.hrStorageSize * storage.hrStorageAllocationUnits, storage.hrStorageDescr)
-		).onclick = function () {
-			onSelectResource("storage", index);
-		};
+		).onclick = onSelectResource.bind(window, "storage", index);
 	
 	document.body.classList.add("storage");
 }
@@ -714,10 +773,12 @@ function initMemory(memory) {
 		color = "orange";
 	}
 	
-	bar.classList.add(color);
-	bar.dataset.value = usage +"%"; 
+	usage += "%";
 	
-	document.getElementById("memory").setAttribute("height", usage);
+	bar.classList.add(color);
+	bar.dataset.value = usage; 
+	
+	document.getElementById("memory").style.height = usage;
 	
 	document.getElementById("memory_total").textContent = ITAhM.util.toBytesString(size);
 	document.getElementById("memory_used").textContent = ITAhM.util.toBytesString(used);
@@ -725,7 +786,7 @@ function initMemory(memory) {
 	document.body.classList.add("memory");
 }
 
-function initIFace(iFace, index) {
+function initIFace(iFace, index, ifSpeed) {
 	interfaceArea.appendChild(
 		createIFaceGuage(
 			iFace.ifAdminStatus,
@@ -734,9 +795,8 @@ function initIFace(iFace, index) {
 			iFace.ifName,
 			iFace.ifDescr,
 			iFace.ifAlias,
-			(function (device) {
-				return device.ifSpeed && device.ifSpeed[index];
-			})(databases.device[window.ip]) || iFace.ifHighSpeed || iFace.ifSpeed,
+			iFace.ifType,
+			ifSpeed || iFace.ifHighSpeed || iFace.ifSpeed,
 			iFace.ifInBPS || 0,
 			iFace.ifOutBPS || 0,
 			iFace.ifInErrors || 0,
@@ -746,11 +806,42 @@ function initIFace(iFace, index) {
 }
 
 function onSelectResource(resource, index) {
-	document.body.classList.add("frame");
+	chartFrame.onload = function () {
+		this.contentWindow.initialize(resource, index);
+	}
 	
-	document.querySelector("div.frame iframe").src = "chart.html?resource="+ resource +"&index="+ index;		
+	chartFrame.src = "chart.html";
+	
+	document.body.classList.add("frame");
 }
 
+//public
+function getIFSpeed(index) {
+	return window.device.ifSpeed && window.device.ifSpeed[index];
+}
+
+//public
+function setIFSpeed(f, index, speed) {
+	if (!("ifSpeed" in window.device)) {
+		window.device.ifSpeed = {};
+	}
+	
+	if (speed) {console.log(speed);
+		window.device.ifSpeed[index] = speed;console.log(window.device);
+	}
+	else {
+		delete window.device.ifSpeed[index];
+	}
+	
+	sendRequest({
+		command: "put",
+		database: "device",
+		key: window.ip,
+		value: window.device
+	}, function () {
+		f();
+	});	
+}
 		</script>
 	</head>
 
@@ -758,7 +849,7 @@ function onSelectResource(resource, index) {
 		
 		<article>
 		
-			<section class="information">
+			<section class="information readonly">
 				<ul>
 					<li>장비명
 					<li id="sys_name">
@@ -781,7 +872,7 @@ function onSelectResource(resource, index) {
 				</ul>
 			</section>
 			
-			<section class="process">
+			<section class="process readonly">
 				<h2>프로세스</h2>
 				<div id="process"></div>
 			</section>
@@ -797,11 +888,7 @@ function onSelectResource(resource, index) {
 				<h2>물리적 메모리</h2>
 				<div>
 					<div class="memory bar">
-						<svg class="bar">
-							<g transform="translate(0, 100) scale(1, -1)">
-								<rect x="0" y="0" width="100" class="bar" id="memory"></rect>
-							</g>
-						</svg>
+						<div id="memory"></div>
 					</div>
 					<div>
 						<p id="memory_total">용량</p>
@@ -822,14 +909,14 @@ function onSelectResource(resource, index) {
 		<article>
 			
 			<section class="storage">
-				<h2>스토리지 사용</h2>
+				<h2>스토리지</h2>
 				<div>
-					<ul class="storage title">
+					<ul class="title storage">
 						<li>이름
 						<li>크기
 						<li class="usage">사용
 					</ul>
-					<div id="storage">
+					<div id="storage" class="tbody">
 					</div>
 				</div>
 			</section>
@@ -849,6 +936,7 @@ function onSelectResource(resource, index) {
 						<li>상태
 						<li>이름
 						<li>설명
+						<li>종류
 						<li>대역폭
 						<li>
 							<div>사용량</div>
@@ -869,7 +957,7 @@ function onSelectResource(resource, index) {
 								<span>수신</span>
 							</div>
 					</ul>
-					<div id="i_face">
+					<div id="i_face"  class="tbody">
 					</div>
 				</div>
 			</section>
@@ -882,9 +970,11 @@ function onSelectResource(resource, index) {
 		
 		<div class="frame">
 			<header>
-				<span>x</span>
+				<span>&#10006;</span>
 			</header>
-			<iframe></iframe>
+			<div>
+				<iframe id="chart"></iframe>
+			</div>
 		</div>
 		
 		<div class="bg_loading"></div>
@@ -908,7 +998,7 @@ function onSelectResource(resource, index) {
 				<li>
 				<li>
 				<li class="bar">
-					<img src="img/dot_gray.png" class="color">
+					<div></div>
 			</ul>		
 	
 			<ul class="i_face item">
@@ -918,76 +1008,81 @@ function onSelectResource(resource, index) {
 				<li>
 				<li>
 				<li>
+				<li>
 				<li class="bar">
-					<img src="img/dot_green.png" width="0" height="0" class="color">
+					<div></div>
 				<li class="bar">
-					<img src="img/dot_orange.png" width="0" height="0" class="color">
+					<div></div>
 				<li>
 					<div></div>
 					<div></div>
 			</ul>
 		</div>
-	</body>
 	
-	<script src="js/ITAhM.js"></script>
-	<script src="js/snmp.js"></script>
-	<script>
+		<script src="js/ITAhM.js"></script>
+		<script src="js/snmp.js"></script>
+		<script>
 	
-	var sendRequest = opener.top.sendRequest,
-		showDialog = opener.top.showDialog,
-		databases = opener.top.databases,
-		realtime = {},
-		ip = window.location.search.substring(1),
-		device = opener.top.databases.device[ip],
-		processorArea = document.getElementById("processor"),
-		storageArea = document.getElementById("storage"),
-		memoryArea = document.getElementById("memory"),
-		interfaceArea = document.getElementById("i_face"),
-		gauge = document.querySelector(".gauge"),
-		processorGauge = document.querySelector(".processor_item"),
-		storageGauge = document.querySelector(".storage.item"),
-		iFaceGauge = document.querySelector(".i_face.item");
-	
-	window.onunload = function () {
-		for (var resource in realtime) {
-			for (var index in realtime[resource]) {
-				realtime[resource][index].close();
-			}
+var ip, snmp, ifSpeed,
+	origin = "status",
+	sendRequest = opener.top.sendRequest,
+	showDialog = opener.top.showDialog,
+	databases = opener.top.databases,
+	realtime = {},
+	processorArea = document.getElementById("processor"),
+	storageArea = document.getElementById("storage"),
+	interfaceArea = document.getElementById("i_face"),
+	gauge = document.querySelector(".gauge"),
+	/*processorGauge = document.querySelector(".processor_item"),*/
+	storageGauge = document.querySelector(".storage.item"),
+	iFaceGauge = document.querySelector(".i_face.item"),
+	chartFrame = document.getElementById("chart"),
+	rtFrame = document.getElementById("realtime_response");
+
+window.onunload = function () {
+	for (var resource in realtime) {
+		for (var index in realtime[resource]) {
+			realtime[resource][index].close();
 		}
-	};
-	
-	document.querySelector(".response_time").onclick = function () {
-		onSelectResource("responseTime");
-	};
-	
-	document.getElementById("realtime_response").onload = function () {
-		this.contentWindow.initialize(window.ip);
-	};
-	
-	document.getElementById("filter").onclick = function () {
-		document.body.classList[this.checked? "add": "remove"]("filter");
-	};
-	
-	document.getElementById("print").onclick = function () {
-		window.print();	
-	};
-	
-	document.getElementById("refresh").onclick = function () {
-		window.location.reload();	
-	};
-	
-	document.querySelector(".frame span").onclick = function () {
-		document.body.classList.remove("frame");;
 	}
+};
+
+document.querySelector(".response_time").onclick = onSelectResource.bind(window, "responseTime");
+
+document.getElementById("filter").onclick = function () {
+	document.body.classList[this.checked? "add": "remove"]("filter");
+};
+
+document.getElementById("print").onclick = function () {
+	window.print();	
+};
+
+document.getElementById("refresh").onclick = function () {
+	window.location.reload();
+};
+
+document.querySelector(".frame span").onclick = function () {
+	document.body.classList.remove("frame");;
+};
+
+(function (device) {
+	window.ip = device.ip;
+	window.device = device;
 	
 	sendRequest({
 		command: "select",
-		ip: window.ip	
+		ip: device.ip	
 	}, function (snmp) {
 		window.snmp = snmp;
 		
 		initialize();
 	});
+})(window.databases.device[window.name]);
+
+if (location.search.substring(1) === "debug") {
+	document.body.classList.add("debug");
+}
+		</script>
 	
-	</script>
+	</body>
 </html>

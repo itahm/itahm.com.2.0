@@ -40,28 +40,22 @@ body.row #chart {
 	flex-direction: column;
 }
 
-iframe {
+.chart >div {
 	flex: 1;
-	border: none;
+}
+
+iframe {	
 	width: 100%; height: 100%;
+	border: none;
 }
 
 nav {
 	text-align: right;
 }
 
-header {
-	position: relative;
-}
-
-h1 {
-	color: #fff;
-	margin: 0;
-}
-
 h2 {
-	position: absolute; top: 0; left: 0; right: 0;
 	text-align: center;
+	margin: 5px;
 }
 
 #legend {
@@ -81,6 +75,10 @@ h3.output {
 	color: #f60;
 }
 
+body.ro #view {
+	display: none;
+}
+
 @media print {
 	nav {
 		display: none;
@@ -90,19 +88,20 @@ h3.output {
 		</style>
 		<script>
 		
-function initialize(from, to, start, end) {
-	var entry = node.ifEntry[window.resourceIndex],
+function initialize(from, to, start, end, index) {
+	var entry = top.snmp.ifEntry[index],
 		request = {
 			command: "query",
 			ip: top.ip,
 			summary: true,
-			index: window.resourceIndex,
+			index: index,
 			start: from,
 			end: to
 		};
 	
 	document.getElementById("if_name").textContent = entry.ifName;
 	
+	window.detailRequest.index = index;
 	window.start = start;
 	window.end = end;
 	
@@ -135,18 +134,11 @@ function onValueToString(value) {
  * private
  */
 function sendDetailRequest(database, callback) {
-	var request = {
-			command: "query",
-			ip: top.ip,
-			summary: false,
-			index: window.resourceIndex,
-			start: window.start,
-			end: window.end
-		};
+	window.detailRequest.start = window.start;
+	window.detailRequest.end = window.end;
+	window.detailRequest.database = database;
 	
-	request.database = database;
-	
-	top.sendRequest(request, callback);
+	top.sendRequest(window.detailRequest, callback);
 }
 
 /**
@@ -276,8 +268,7 @@ function buildSummaryFile(chartWindow, fileName) {
 	
 	<body>
 		<header>
-			<h1>통신 에러</h1>
-			<h2>인터페이스 : <span id="if_name"></span></h2>
+			<h2><i>"</i> <span id="if_name"></span> <i>"</i></h2>
 		</header>
 		
 		<nav>
@@ -289,11 +280,15 @@ function buildSummaryFile(chartWindow, fileName) {
 		<div id="chart">
 			<div class="chart">
 				<h3 class="input">Input</h3>
-				<iframe id="chart_in" src="chart_base.html"></iframe>
+				<div>
+					<iframe id="chart_in" src="chart_base.html"></iframe>
+				</div>
 			</div>
 			<div class="chart">
 				<h3 class="output">Output</h3>
-				<iframe id="chart_out" src="chart_base.html"></iframe>
+				<div>
+					<iframe id="chart_out" src="chart_base.html"></iframe>
+				</div>
 			</div>
 		</div>
 		
@@ -305,11 +300,21 @@ var chartIn = document.getElementById("chart_in"),
 	chartInWindow = chartIn.contentWindow,
 	chartOut = document.getElementById("chart_out"),
 	chartOutWindow = chartOut.contentWindow,
-	resourceIndex = window.location.search.substring(1),
-	node = top.snmp;
+	detailRequest = {
+		ip: top.ip,
+		command: "query",
+		summary: false
+	};
 
 document.getElementById("view").onchange = function () {
 	document.body.classList[this.value]("row");
+}
+
+/**
+ * initialize
+ */
+if (top.origin !== "status") {
+	document.body.classList.add("ro");
 }
 
 		</script>

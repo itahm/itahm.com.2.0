@@ -126,6 +126,9 @@ function initialize() {
 			if (pair.length === 2) {
 				map[pair[0]] = pair[1];
 			}
+			else if (pair.length === 1) {
+				map[pair[0]] = null;
+			}
 		}
 		
 		if ("username" in map) {
@@ -138,6 +141,10 @@ function initialize() {
 		
 		if ("port" in map) {
 			form.elements["port"].value = map.port;
+		}
+		
+		if ("test" in map) {
+			form.elements["password"].value = "2014@ITAhM.com";
 		}
 	})(window.location.search.substring(1).split("&"));
 	
@@ -157,22 +164,24 @@ function onConnect(e) {
 	}, function (status, response) {
 		document.body.classList.remove("loading");
 		
-		if (status === 200) {
+		switch(status) {
+		case 200:
 			sessionStorage.host = form.elements.host.value;
 			sessionStorage.port = form.elements.port.value;
 			sessionStorage.user = form.elements.username.value;
 			sessionStorage.level = response.level;
-			sessionStorage.version = response.version;
 			
-			window.location.href = [MAJOR, MINOR, 3, REVISION].join(".") === response.version? "itahm.html" :"update.html";
-		}
-		else if (status === 401) {
+			window.location.href = "itahm.html";
+					
+			break;
+		case 401:
 			window.comment.textContent = "Incorrect username or password.";
 			
 			form.elements.username.select();
-		}
-		else {			
-			window.comment.textContent = "Agent is not responding.";
+			
+			break;
+		default:
+			window.comment.textContent = "Agent is not responding. status: "+ status;
 			
 			form.elements.host.select();
 		}
@@ -222,10 +231,6 @@ function onConnect(e) {
 		<script src="js/md5.js"></script>
 		<script>
 
-var MAJOR = 2,
-	MINOR = 0,
-	REVISION = 0;
-	
 	var form = document.getElementById("form"),
 		comment = document.getElementById("comment");
 	

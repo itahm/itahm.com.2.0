@@ -2,8 +2,8 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<meta http-equiv="Content-Script-Type" content="text/javascript">
-		<meta http-equiv="Content-Style-Type" content="text/css">
+		<meta http-equiv="Cache-Control" content="No-Cache">
+		
 		<title>ITAhM</title>
 		
 		<style>
@@ -17,6 +17,19 @@ body {
 	position: absolute; top: 0; right: 0; bottom: 0; left: 0;
 	width: 100%;
 	height: 100%;
+}
+
+#graph >path {
+	stroke-width: 4px;
+	fill-opacity: 0.5;
+	animation: grow2 0.5s;
+}
+
+#graph >path.line {
+	stroke-width: 3px;
+	fill: none;
+	stroke: #fff;
+	animation: grow 0.5s;
 }
 
 .balloon {
@@ -56,16 +69,6 @@ text {
 	stroke: #ddd;
 	stroke-width: .5;
 	fill: none;
-}
-
-path.detail {
-	stroke: #fff;
-	stroke-width: 1;
-	fill: none;
-}
-
-path.fill_min {
-	fill: #4d525a;
 }
 
 #axis_left text {
@@ -129,9 +132,25 @@ nav input[type="checkbox"]:checked ~img.lock {
 	text {
 		fill: #000;
 	}
-	
-	path.fill_min {
-		fill: #fff;
+}
+
+@keyframes grow {
+	from {
+		transform: scale(1, 0);
+	}
+	to {
+		transform: scale(1, 1);
+	}
+}
+
+@keyframes grow2 {
+	from {
+		transform: scale(1, 0);
+		transform-origin: 0 50%;
+	}
+	to {
+		transform: scale(1, 1);
+		transform-origin: 0 50%;
 	}
 }
 
@@ -142,7 +161,7 @@ function onResize() {
 	resize();
 	
 	drawChart();
-	
+		
 	if (window.detailData && window.detailKeys) {
 		drawDetail();
 	}
@@ -153,6 +172,10 @@ function resize() {
 		width = rect.width - MARGIN *2,
 		height = rect.height - MARGIN *2 - DATE_AXIS_HEIGHT,
 		reset = false;
+	
+	if (rect.width === 0 || rect.height === 0) {
+		return false;
+	}
 	
 	window.graph.transform.baseVal.getItem(0).setTranslate(0, height);
 	
@@ -166,32 +189,39 @@ function resize() {
 	hoverHAvg.setAttribute("x2", width);
 	hoverHMin.setAttribute("x2", width);
 	
-	//hoverDate.style.top = (height + MARGIN) + "px";
 	hoverDate.style.top = "0";
+	
+	return true;
 }
 
 function drawGrid() {
 	var path = new ITAhM.Path(window.grid),
 		height = window.rect.height,
-		width = window.rect.width;
+		width = window.rect.width,
+		countXarr = [],
+		countX, countY;
 
 	clear(window.grid);
 	
-	window.blockWidth = width / 24;
-	
-	while (blockWidth < MIN_AXIS_HSPACE) {
-		blockWidth *= 2;
-	}
-	
-	window.blockHeight = height / Math.round(height / MIN_AXIS_VSPACE);
-	
-	for (var x = 0, roundedX ; x <= width; x += blockWidth) {
-		roundedX = Math.round(x) -.5;
+	for (var i=0, arr=[24, 12, 8, 6, 4, 3, 2, 1]; i<arr.length; i++) {
+		countX = arr[i];
 		
-		path.moveTo(x, 0).lineTo(roundedX, height);
+		if (countX *MIN_AXIS_HSPACE < width) {
+			break;
+		}
 	}
 	
-	for (var y = 0, roundedY ; y <= height; y += blockHeight) {
+	window.blockWidth = width / countX;
+	
+	for (var x = 0, i=0; i<=countX; i++, x += blockWidth) {
+		path.moveTo(x, 0).lineTo(Math.round(x) -.5, height);
+	}
+	
+	countY = Math.max(1, Math.floor(height / MIN_AXIS_VSPACE));
+	
+	window.blockHeight = height / countY;	
+	
+	for (var y = 0, i=0, roundedY ; i <= countY; i++, y += blockHeight) {
 		roundedY = Math.round(y) -.5;
 		
 		path.moveTo(0, roundedY).lineTo(width, roundedY);
@@ -270,10 +300,9 @@ function drawGraph() {
 		return;
 	}
 	
-	var fillMax = new ITAhM.Path(window.graph),
-		fillMin = new ITAhM.Path(window.graph),
+	
+	var area = new Test(),
 		strokeAvg = new ITAhM.Path(window.graph),
-		//strokeMin = new ITAhM.Path(window.graph),
 		high = window.chartSummary.high,
 		blocks = window.chartSummary.keys,
 		dateArray, date, mills, yAvg, yMax, yMin;
@@ -281,25 +310,11 @@ function drawGraph() {
 	window.low = window.chartSummary.low,
 	window.yRatio = window.rect.height / (high - window.low);
 	
-	//strokeMax.set("stroke", window.color);
-	//strokeMax.set("stroke-width", 2);
-	//strokeMax.set("fill", "none");
-	strokeAvg.set("stroke", "#fff");
-	strokeAvg.set("stroke-width", 3);
-	strokeAvg.set("fill", "none");
-	////strokeMin.set("stroke", window.color);
-	//strokeMin.set("fill", "none");
-	//strokeMin.set("stroke-width", 2);
+	area.color = window.color;
 	
-	fillMax.set("fill", window.color);
+	strokeAvg.set("class", "line");
 	
-	fillMin.set("class", "fill_min")
-	
-	//strokeMax.beginPath();
-	fillMax.beginPath();
 	strokeAvg.beginPath();
-	//strokeMin.beginPath();
-	fillMin.beginPath();
 	
 	for (var i=0, _i=blocks.length; i<_i; i++) {
 		dateArray = blocks[i];
@@ -313,12 +328,8 @@ function drawGraph() {
 		yMax = (y.max - window.low) * window.yRatio;
 		yMin = (y.min - window.low) * window.yRatio;
 		
-		fillMax.moveTo(x, 0);
-		fillMax.lineTo(x, yMax);
-		
-		fillMin.moveTo(x, 0);
-		fillMin.lineTo(x, yMin);
-		
+		area.initialize(x, yMax, yMin);
+				
 		strokeAvg.moveTo(x, yAvg);
 		
 		for (var j=1,_j=dateArray.length; j<_j; j++) {
@@ -329,40 +340,61 @@ function drawGraph() {
 			
 			strokeAvg.lineTo(x, yAvg);
 			
-			fillMax.lineTo(x, yMax);
-			fillMin.lineTo(x, yMin);
-			
 			yMax = (y.max - window.low) * window.yRatio;
 			yMin = (y.min - window.low) * window.yRatio;
 			yAvg = (y.avg - window.low) * window.yRatio;
 			
 			strokeAvg.lineTo(x, yAvg);
 			
-			fillMax.lineTo(x, yMax);
-			fillMin.lineTo(x, yMin);
+			area.add(x, yMax, yMin);
 		}
 		
 		date = new Date(mills);
 	
 		x = (date.setHours(date.getHours() +1) - window.start) / window.tpp;
 		
-		fillMax.lineTo(x, yMax);
-		fillMin.lineTo(x, yMin);
-		
 		strokeAvg.lineTo(x, yAvg);
 		
-		fillMax.lineTo(x, 0);
-		fillMin.lineTo(x, 0);
-		
-		fillMax.closePath();
-		fillMin.closePath();
-		
-		fillMax.draw();
-		fillMin.draw();
+		this.graph.appendChild(area.draw(x, yMin));
 		
 		strokeAvg.draw();
 	}
 }
+
+function Test(x, max, min) {
+	this.initialize(x, max, min);
+}
+
+Test.prototype = {
+	initialize: function (x, fY, bY) {
+		this.o = [x, fY];
+		this.f = [];
+		this.b = [["V", bY, "H", x].join("")];
+	},
+	add: function (x, fY, bY) {
+		this.f[this.f.length] = ["H", x, "V", fY].join("");
+		this.b[this.b.length] = ["V", bY, "H", x].join("");
+	},
+	draw: function (x, y) {
+		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		
+		this.b.reverse();
+		
+		path.setAttribute("d", 
+			["M", this.o.join(" ")].join("")
+			+ this.f.join("")
+			+ ["H", x].join("")
+			+ ["V", y].join("")
+			+ this.b.join("") +"z");
+		
+		if (this.color) {
+			path.setAttribute("fill", this.color);
+			path.setAttribute("stroke", this.color);
+		}
+		
+		return path;
+	}
+};
 
 function drawDateAxis() {
 	var text, date, h, pY, pM, pD;
@@ -431,6 +463,10 @@ function draw(start, end) {
  * private
  */
 function drawChart() {
+	if (!window.rect.width) {
+		return false;
+	}
+	
 	var x, y, dateArray, date;
 
 	window.chartSummary = window.summaryData.parseData(window.start, window.end);
@@ -446,32 +482,31 @@ function drawChart() {
 	clear(window.leftAxis);
 	clear(window.rightAxis);
 	
-	if (!window.chartSummary) {
-		return false;
-	}
-	
 	drawGraph();
 	
 	drawValueAxis();
 	
-	return true;
+	return window.chartSummary? true: false;
 }
 
 /**
  * public
  */
-function detail(detailData) {
+// dataOnly: if true do not draw
+function detail(detailData, dataOnly) {
 	window.detailData = detailData;
 	window.detailKeys = window.detailData.parseData(window.start, window.end);
 	
-	drawDetail();
+	if (!dataOnly) {
+		drawDetail();
+	}
 }
 
 function drawDetail() {
 	var path = new ITAhM.Path(window.graph),
 		mills, y;
 	
-	path.set("class", "detail");
+	path.set("class", "line");
 	path.beginPath();
 	
 	mills = window.detailKeys[0];
@@ -529,7 +564,7 @@ function afterPrint() {
 function onValueToString(value) {
 	return value;
 }
-		
+
 		</script>
 	</head>
 	
@@ -560,7 +595,7 @@ function onValueToString(value) {
 		<script src="js/ITAhM.js"></script>
 		<script src="js/object.js"></script>
 		<script>
-
+		
 var svgNS = "http://www.w3.org/2000/svg",
 	xlinkNS = "http://www.w3.org/1999/xlink",
 	MONTH_NAME = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],

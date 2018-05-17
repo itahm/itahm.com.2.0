@@ -27,7 +27,7 @@ Array.prototype.fill = Array.prototype.fill || function (val) {
 		toBytesString: function (bytes) {
 			var unit = ["Bytes", "KBytes", "MBytes", "GBytes", "TBytes"];
 			
-			for(var i=0, _i=unit.length; i<_i; i++) {
+			for(var i=0, _i=unit.length -1; i<_i; i++) {
 				if (bytes > 999) {
 					bytes /= 1024;
 				}
@@ -46,7 +46,7 @@ Array.prototype.fill = Array.prototype.fill || function (val) {
 			
 			var unit = ["bps", "Kbps", "Mbps", "Gbps", "Tbps"];
 			
-			for(var i=0, _i=unit.length; i<_i; i++) {
+			for(var i=0, _i=unit.length -1; i<_i; i++) {
 				if (bandwidth > 999) {
 					bandwidth /= 1000;
 				}
@@ -224,3 +224,34 @@ Array.prototype.fill = Array.prototype.fill || function (val) {
 	};
 	
 }) (window);
+
+function setValueAsDate(e, d) {
+	if ("valueAsDate" in e) {
+		d = new Date(d.getTime());
+		
+		d.setHours(9, 0, 0, 0);
+		
+		e.valueAsDate = d;
+	}
+	else {
+		var mm = d.getMonth() +1,
+			dd = d.getDate();
+		
+		e.value = [d.getFullYear(), mm > 9? mm: "0"+ mm, dd > 9? dd: "0"+ dd].join('-');
+	}
+}
+
+function getValueAsDate(e) {
+	var date;
+	
+	if ("valueAsDate" in e) {
+		date = e.valueAsDate;
+	}
+	else {
+		date = new Date(e.value);
+	}
+	
+	date.setHours(0, 0, 0, 0);
+	
+	return date;
+}

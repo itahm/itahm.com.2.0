@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Test 2</title>
+		<style>
+
+
+		</style>
+	</head>
+	
+	<body>
+		<button id="a">a</button>
+		<button id="b">b</button>
+		<button id="c">c</button>
+		<iframe></iframe>
+		<script>
+		var f = document.querySelector("iframe"),
+			cw = f.contentWindow,
+			a = document.getElementById("a"),
+			b = document.getElementById("b"),
+			c = document.getElementById("c");
+		
+		f.onload = function () {
+			console.log("frame onload");
+		};
+		f.contentWindow.onload = function () {
+			console.log("contentWindow onload");
+		};
+		a.onclick = function () {
+			f.src = "test3.html";
+		};
+		b.onclick = function () {
+			f.contentWindow.location.reload();
+		};
+		c.onclick = function () {
+			f.src = "test3.html";
+			
+			console.log(cw === f.contentWindow);
+		};
+		
+		var iframe = document.createElement('iframe');
+		document.body.appendChild(iframe);
+		console.log(iframe.contentWindow);
+		iframe.onload = function() {
+			console.log(this.contentWindow);
+		};
+		iframe.src = 'about:blank';
+		
+		</script>
+
+	</body>
+</html>

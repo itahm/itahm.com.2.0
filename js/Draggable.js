@@ -72,7 +72,9 @@ function Draggable(target) {
 	
 	function initEvent() {
 		target.addEventListener("mousedown", function(e) {
-			onMouseDown(e);
+			if (e.button === 0) {
+				onMouseDown(e);
+			}
 			
 			e.preventDefault();
 		});
