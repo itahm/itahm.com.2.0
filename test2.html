@@ -10,43 +10,32 @@
 	</head>
 	
 	<body>
-		<button id="a">a</button>
-		<button id="b">b</button>
-		<button id="c">c</button>
-		<iframe></iframe>
+		<section>
+			<select id="s1">
+				<option value="a">aaa</option>
+				<option value="b">bbb</option>
+				<option value="c">ccc</option>
+			</select>
+		</section>
+		<section>
+			<select id="s2">
+				<option>aaa</option>
+				<option>bbb</option>
+				<option>ccc</option>
+			</select>
+		</section>
+		
 		<script>
-		var f = document.querySelector("iframe"),
-			cw = f.contentWindow,
-			a = document.getElementById("a"),
-			b = document.getElementById("b"),
-			c = document.getElementById("c");
+		const s1 = document.querySelector("#s1");
 		
-		f.onload = function () {
-			console.log("frame onload");
-		};
-		f.contentWindow.onload = function () {
-			console.log("contentWindow onload");
-		};
-		a.onclick = function () {
-			f.src = "test3.html";
-		};
-		b.onclick = function () {
-			f.contentWindow.location.reload();
-		};
-		c.onclick = function () {
-			f.src = "test3.html";
-			
-			console.log(cw === f.contentWindow);
-		};
+		s1.value="b";
 		
-		var iframe = document.createElement('iframe');
-		document.body.appendChild(iframe);
-		console.log(iframe.contentWindow);
-		iframe.onload = function() {
-			console.log(this.contentWindow);
-		};
-		iframe.src = 'about:blank';
+		const s2 = document.querySelector("#s2");
 		
+		s2.value="bbb";
+		
+		console.log(s1.value);
+		console.log(s2.value);
 		</script>
 
 	</body>

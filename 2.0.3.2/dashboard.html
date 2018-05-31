@@ -7,7 +7,7 @@
 		<title>Dashboard @ ITAhM</title>
 		
 		<style>
-@import "css/itahm.css";
+@import "/css/itahm.css";
 
 body {
 	position: fixed; top: 0; right: 0; bottom: 0; left: 0;
@@ -19,13 +19,11 @@ body {
 }
 
 aside {
-	position: fixed; top: 0; bottom: 0; left: 0;
+	position: absolute; top: 0; bottom: 0; left: 0;
 	pointer-events: none;
 	width: 300px;
-	display: flex;
 	box-sizing: border-box;
 	padding: .5em;
-	flex-direction: column;
 	text-shadow: 1px 1px 1px #000;
 }
 
@@ -38,8 +36,8 @@ aside> .top {
 
 #summary_list {
 	position: relative;
-	flex: 1;
 	overflow-y: auto;
+	pointer-events: auto;
 }
 
 article {
@@ -54,7 +52,7 @@ article {
 	box-sizing: border-box;
 	border-radius: 3px;
 	position: relative;
-	background: url("img/world.png") no-repeat center center fixed;
+	background: url("/img/world.png") no-repeat center center fixed;
 	background-size: cover;
 	user-select: none;
 	animation-duration: .5s;
@@ -535,7 +533,7 @@ body.name .list_item> li:nth-child(2) {
 	height: 2em; width: 2em;
 	position: absolute; top: 50%; left: -2em;
 	background-repeat: no-repeat;
-	background-image: url("img/normal.png");
+	background-image: url("/img/normal.png");
 	background-size: 1.6em;
 	transform: translateY(-50%);
 }
@@ -563,7 +561,7 @@ body.name .list_item> li:nth-child(2) {
 }
 */
 .item.shutdown::before {
-	background-image: url("img/warning.png");
+	background-image: url("/img/warning.png");
 }
 /*
 .item.critical {
@@ -571,7 +569,7 @@ body.name .list_item> li:nth-child(2) {
 }
 */
 .item.critical::before {
-	background-image: url("img/siren.png");
+	background-image: url("/img/siren.png");
 }
 
 /* << event */
@@ -627,7 +625,7 @@ function createTopList(resource) {
 
 function update() {
 	removeClass(document.body, "update");
-	
+
 	let list;
 	
 	for (var resource in window.topList) {
@@ -842,9 +840,14 @@ function createTopItem(ip, value, rate, resource, index) {
 	}
 	
 	item.onclick = function () {
-		top.showStatus(id, resource, index);
+		top.showStatus(id);
 	}
 	
+	bar.onclick = function (e) {
+		e.stopPropagation();
+		
+		top.showStatus(id, resource, index);
+	}
 	return item;
 }
 
@@ -942,9 +945,9 @@ function onEvent(ip) {
 					</g>
 				</svg>
 				<nav>
-					<img src="img/zoomi.png" width="16" height="16" title="전체화면에서 편집" id="edit">
-					<img src="img/plus.png" width="16" height="16" title="맵 확대" id="zoom_in">
-					<img src="img/minus.png" width="16" height="16" title="맵 축소" id="zoom_out">
+					<img src="/img/zoomi.png" width="16" height="16" title="전체화면에서 편집" id="edit">
+					<img src="/img/plus.png" width="16" height="16" title="맵 확대" id="zoom_in">
+					<img src="/img/minus.png" width="16" height="16" title="맵 축소" id="zoom_out">
 				</nav>
 			</div>
 		</article>
@@ -983,7 +986,7 @@ function onEvent(ip) {
 			
 		<div class="bg_loading"></div>
 		<script src="/js/ITAhM.js"></script>
-		<script src="js/Draggable.js"></script>
+		<script src="/js/Draggable.js"></script>
 		<script>
 
 var summaryList = document.getElementById("summary_list"),
@@ -1057,7 +1060,7 @@ if ("display" in top.databases.config) {
 }
 
 document.getElementById("edit").onclick = function () {
-	window.location.href = "map_demo.html";
+	window.location.href = "/2.0.3.2/map.html";
 };
 
 (function () {
@@ -1263,10 +1266,10 @@ document.getElementById("edit").onclick = function () {
 		removeClass(svgDevice, "shutdown", "critical");
 		
 		if (!monitor) {
-			svgIcon.setAttributeNS(xlinkNS, "xlink:href", icon.disabled);
+			svgIcon.setAttributeNS(xlinkNS, "xlink:href", "/"+ icon.disabled);
 		}
 		else {
-			svgIcon.setAttributeNS(xlinkNS, "xlink:href", icon.src);
+			svgIcon.setAttributeNS(xlinkNS, "xlink:href", "/"+ icon.src);
 			
 			if (monitor.shutdown) {
 				addClass(svgDevice, "shutdown");

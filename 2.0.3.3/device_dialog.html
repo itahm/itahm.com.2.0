@@ -7,7 +7,7 @@
 		<title>dialog</title>
 		
 		<style>
-@import "css/itahm.css";
+@import "/css/itahm.css";
 
 body {
 	position: fixed; top: 0; right: 0; bottom: 0; left: 0;
@@ -21,7 +21,6 @@ form {
 	width: 300px;
 	padding: 20px;
 	background-color: #fff;
-	/*box-shadow: 0px 0px 20px 10px #ddd;*/
 }
 
 h2 {
@@ -170,7 +169,7 @@ function buildType() {
 
 function onSearch() {
 	if (Object.keys(top.databases.profile).length > 0) {
-		top.showDialog.call(window, "search_dialog.html");
+		top.showDialog.call(window, "/search_dialog.html");
 	}
 	else {
 		alert("사용 가능한 프로파일이 존재하지 않습니다.\n"+ "\n" +"먼저 프로파일을 생성하십시오.");
@@ -230,7 +229,7 @@ function onApply(e) {
 }
 
 function saveDevice(id, device) {
-	top.setDevice(id, device);
+	top.databases.device[id] = device;
 	
 	if (window.opener) {
 		window.opener.reload();
@@ -312,7 +311,8 @@ function onMonitorDevice(e) {
 				database: "monitor",
 				key: device.ip,
 				value: this.value === "none"? null: {
-					protocol: this.value
+					protocol: this.value,
+					id: window.id
 				}
 			}, function (data) {
 				top.databases.monitor = data;

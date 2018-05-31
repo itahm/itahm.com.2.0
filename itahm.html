@@ -235,16 +235,10 @@ function setMenu(b) {
 	}
 }
 
-function setDevice(id, device) {
-	if (device.ip) {
-		window.index[device.ip] = id;
-	}
-	
-	window.databases[id] = device;
-}
-
 function getDeviceID(ip) {
-	return window.index[ip];
+	const monitor = window.databases.monitor[ip];
+	
+	return monitor && monitor.id || ip;
 }
 
 function showDialog() {
@@ -566,7 +560,6 @@ var
 	listener = {
 		command: "listen"
 	},
-	index = {},
 	count = document.getElementById("count"),
 	dialog = document.getElementById("dialog"),
 	log = document.getElementById("log"),

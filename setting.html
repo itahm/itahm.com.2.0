@@ -85,7 +85,7 @@ ul {
 	cursor: default;
 }
 
-#resources input[type=checkbox] {
+input[type=checkbox] {
 	vertical-align: middle;
 }
 
@@ -231,6 +231,84 @@ function initConfig() {
 	}
 }
 
+function initCritical() {
+	const critical = document.getElementById("critical");
+	
+	critical.elements["all"].onclick = function () {
+		const ip = critical.elements["ip"];
+
+		ip.value = "";
+		
+		if (this.checked) {
+			ip.disabled = true;
+		}
+		else {
+			ip.disabled = false;
+			ip.focus();
+		}
+	};
+	
+	critical.onsubmit = function (e) {
+		e.preventDefault();
+		
+		const monitorData = top.databases.monitor,
+			overwrite = this.elements["overwrite"].checked;
+		
+		if (overwrite) {
+			if (!confirm("기존 설정을 덮어쓰기 하겠습니까?")) {
+				return;
+			}
+		}
+		
+		var target;
+		
+		if (!this.elements["all"].checked) {
+			const ip = critical.elements["ip"];
+			
+			target = ip.value;
+			
+			if (!target) {
+				return ip.focus();
+			}
+			
+			if (!(target in monitorData && monitorData[target].protocol === "snmp")) {
+				alert("존재하지 않는 모니터링 대상 IP 입니다.");
+				
+				return ip.select();
+			}
+		}
+		
+		document.body.classList.add("loading");
+		
+		top.postRequest({
+			command: "extra",
+			extra: "critical",
+			target: target,
+			resource: this.elements["resource"].value || undefined,
+			rate: this.elements["rate"].value,
+			overwrite: overwrite
+		}, function () {
+			switch(this.status) {
+			case 200:
+				alert("임계를 설정 하였습니다.\n"+
+					"서버와 동기화 하기 위해 재시작 합니다.");
+				
+				top.location.reload();
+				
+				break;
+			case 400:
+				alert("현재 버전에서 지원하지 않는 설정입니다.");
+				
+				break;
+			default:
+				return top.notice(this.status);
+			}
+			
+			document.body.classList.remove("loading");
+		});
+	};
+}
+
 function onSetStorage(clean) {	
 	var clean = parseInt(clean.value);
 	
@@ -312,12 +390,7 @@ function onModifyDashboard(e) {
 }
 
 function onModifyTopN (n) {
-	if (n < 1) {
-		n = 1;
-	}
-	else if (n > 10) {
-		n = 10;
-	}
+	n = Math.max(n, 1);
 	
 	document.body.classList.add("loading");
 	
@@ -494,9 +567,7 @@ function onEditIftype(e) {
 		command: "config",
 		key: "iftype",
 		value: iftypes.join(",")
-	}, function () {
-		document.body.classList.remove("loading");
-		
+	}, function () {		
 		switch(this.status) {
 		case 200:
 			top.databases.config.iftype = iftypes.join(",");
@@ -513,6 +584,8 @@ function onEditIftype(e) {
 		default:
 			return top.notice(this.status);
 		}
+		
+		document.body.classList.remove("loading");
 	});
 }
 
@@ -597,10 +670,44 @@ function onTest(e) {
 }
 
 function initialize() {
+	var configData = top.databases.config;
+	
 	initConfig();
+	initCritical();
 	initAccount();
 	initProfile();
 	initSMS();
+	
+	(function (form) {
+		form.onsubmit = function (e) {
+			e.preventDefault();
+			
+			document.body.classList.add("loading");
+			
+			top.postRequest({
+				command: "config",
+				key: "requestTimer",
+				value: this.elements["timer"].value
+			}, function () {
+				switch(this.status) {
+				case 200:
+					alert("SNMP 요청주기를 설정 하였습니다.");
+					
+					break;
+				case 400:
+					alert("현재 버전에서 지원하지 않는 설정입니다.");
+					
+					break;
+				default:
+					return top.notice(this.status);
+				}
+				
+				document.body.classList.remove("loading");
+			});	
+		};
+	
+		form.elements["timer"].value = configData.requestTimer || "10000";
+	}) (document.getElementById("request"));
 	
 	if (top.databases.config.gcm !== undefined && top.databases.config.gcm !== null) {
 		document.body.classList.add("gcm");
@@ -634,6 +741,16 @@ function initialize() {
 		<h2>일반</h2>
 		<ul class="common box">
 			<li>
+				<form id="request">
+					SNMP 요청 주기(초) :
+					<select name="timer">
+						<option value="10000">10
+						<option value="30000">30
+						<option value="60000">60
+					</select>
+					<input type="submit" value="적용" class="root">
+				</form>
+			<li>
 				<form id="clean">
 					데이터 보관 기간(일) :
 					<input type="number" min="0" max="365" name="clean">
@@ -642,10 +759,10 @@ function initialize() {
 				</form>
 			<li>
 				<form id="interval">
-					데이터 수집 단위(분) :
+					데이터 저장 단위(분) :
 					<select name="interval">
-						<option>1
-						<option>5
+						<option value="1">1
+						<option value="5">5
 					</select>
 					<input type="submit" value="적용" class="root">
 				</form>
@@ -661,7 +778,7 @@ function initialize() {
 			<li>
 				<form id="top">
 					Top N : 
-					<input type="number" min="1" max="10" name="top">
+					<input type="number" min="1" name="top">
 					<input type="submit" value="적용" class="root">
 				</form>	
 			<li>
@@ -732,6 +849,37 @@ function initialize() {
 					snmp 오류
 			</ol>
 			<input type="submit" value="적용" class="root">
+		</form>
+		
+		<form id="critical">
+			<h2>임계 설정</h2>
+			<div class="box">
+				<p>
+					적용 노드 :
+					<input type="text" name="ip">
+					<label><input type="checkbox" name="all">모두</label>
+				</p>
+				<p>
+					성능 지표 :
+					<select name="resource" required>
+						<option value="processor">프로세서 로드</option>
+						<option value="memory">메모리</option>
+						<option value="storage">스토리지</option>
+						<option value="throughput">통신</option>
+						<optgroup>
+							<option value="" selected>모두</option>
+						</optgroup>
+						
+					</select>
+				</p>
+				<p>
+					임계값(%) : <input type="number" min="0" max="100" name="rate" required>
+				</p>
+				<p>
+					<label><input type="checkbox" name="overwrite">기존 설정 덮어쓰기</label>
+					<input type="submit" value="실행"><i>서버와 동기화 하기 위해 실행 후 Console을 재시작 합니다.</i>
+				</p>
+			</div>
 		</form>
 		
 		<form id="account">
@@ -853,7 +1001,6 @@ window.sms.elements["enable"].onclick = onEnableSMS;
 custom.onsubmit = onEditCustom;
 iftype.onsubmit = onEditIftype;
 menu.onsubmit = onMenuFix;
-
 window.resources.onclick = onOrderResources;
 
 initialize();

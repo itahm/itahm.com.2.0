@@ -709,10 +709,6 @@ function resetChecked() {
 	window.checked = {};
 }
 
-function showStatus(index) {
-	top.showStatus();
-}
-
 function moveLabel(labelSvg, x1, y1, x2, y2) {
 	labelSvg.setAttribute("x", (x1 *2 + x2) /3);
 	labelSvg.setAttribute("y", (y1 *2 + y2) /3);
@@ -735,7 +731,9 @@ function addLine(id, pos) {
 			labelSvg = document.createElementNS(svgNS, "text");
 			
 			labelSvg.textContent = port.name;
-			labelSvg.onclick = top.showStatus.bind(undefined, id, "throughput", port.index);
+			labelSvg.onclick = function () {
+				top.showStatus(id, "throughput", port.index);
+			}
 			
 			moveLabel(labelSvg, pos.x, pos.y, peerPos.x, peerPos.y);
 		}

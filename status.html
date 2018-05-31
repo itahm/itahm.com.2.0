@@ -548,7 +548,8 @@ function createProcGauge(value) {
 	}
 	
 	circularBar.dataset.value = value +"%";
-	
+	document.
+	requestAnimationFrame
 	setTimeout(function() {
 		circularBar.children[0].childNodes[1].childNodes[3].setAttribute("stroke-dashoffset", 2* Math.PI*(1 - value /100)*45);
 	}, 500);
@@ -826,8 +827,8 @@ function setIFSpeed(f, index, speed) {
 		window.device.ifSpeed = {};
 	}
 	
-	if (speed) {console.log(speed);
-		window.device.ifSpeed[index] = speed;console.log(window.device);
+	if (speed) {
+		window.device.ifSpeed[index] = speed;
 	}
 	else {
 		delete window.device.ifSpeed[index];
@@ -1021,7 +1022,7 @@ function setIFSpeed(f, index, speed) {
 	
 		<script src="js/ITAhM.js"></script>
 		<script src="js/snmp.js"></script>
-		<script>
+		<script type="text/javascript">
 	
 var ip, snmp, ifSpeed,
 	origin = "status",

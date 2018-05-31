@@ -648,10 +648,12 @@ function createTopList(resource) {
 	
 	return section;
 }
-
+var x=0;
 function update() {
 	removeClass(document.body, "update");
-	
+	if (top.topList && x==0) {
+		console.log(top.topList); x++;
+	}
 	let list;
 	
 	for (var resource in window.topList) {
@@ -854,7 +856,7 @@ function createGaugeItem(ip, value, rate, resource, index) {
 	
 	item.className = "list_item";
 	
-	item.appendChild(document.createElement("li")).textContent = top.databases.device[ip].name;
+	item.appendChild(document.createElement("li")).textContent = top.databases.device[id].name;
 	item.appendChild(document.createElement("li")).textContent = ip;
 	
 	bar = item.appendChild(document.createElement("li"));

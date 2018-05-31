@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<title>Connect @ ITAhM</title>
+		<title>ITAhM Demo</title>
 		
 		<style>
 
@@ -339,17 +339,10 @@ function setMenu(b) {
 } 
 
 //public
-function setDevice(id, device) {
-	if (device.ip) {
-		window.index[device.ip] = id;
-	}
-	
-	window.databases.device[id] = device;
-}
-
-//public
 function getDeviceID(ip) {
-	return window.index[ip];
+	const monitor = window.databases.monitor[ip];
+	
+	return monitor && monitor.id || ip;
 }
 
 function showDialog() {
@@ -431,16 +424,19 @@ function onInitialize() {
 	setHeader();
 	
 	// old 버전 호환
-	var group;
-	for (var id in databases.device) {
-		group = databases.device[id];
+	var device;
+	
+	const deviceData = window.databases.device;
+	
+	for (let id in deviceData) {
+		device = deviceData[id];
 		
-		if (!group.group) {
+		if (!device.group) {
 			continue;
 		}
 		
-		if (!("id" in group)) {
-			group.id = id;
+		if (!("id" in device)) {
+			device.id = id;
 		}
 	}
 	
@@ -638,7 +634,6 @@ function sendRequest(request, onResponse, custom) {
 					<ul>
 						<li><h1><a href="dashboard.2.0.3.2.html" target="main">대시보드</a></h1>
 						<li><h1><a href="list.html" target="main">장비목록</a></h1>
-						<li><h1><a href="map.html" target="main">구성도</a></h1>
 						<li><h1><a href="event.html" target="main">이벤트</a></h1>
 						<li><h1><a href="scrap.html" target="main">스크랩</a></h1>
 					</ul>
@@ -680,7 +675,6 @@ var agent = "http://demo.itahm.com:2014",
 	listener = {
 		command: "listen"
 	},
-	index = {},
 	count = document.getElementById("count"),
 	dialog = document.getElementById("dialog"),
 	log = document.getElementById("log"),
@@ -694,9 +688,9 @@ window.addEventListener("unload", onClose);
 	document.body.classList.add("loading");
 	
 	postRequest({
-			command: "signin",
-			username: "guest1",
-			password: "15dac3875ad0f994a832043be841dc7e"
+		command: "signin",
+		username: "guest1",
+		password: "15dac3875ad0f994a832043be841dc7e"
 		}, function () {
 		document.body.classList.remove("loading");
 		

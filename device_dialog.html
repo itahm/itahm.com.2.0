@@ -112,8 +112,11 @@ body.loading {
 (function (version) {
 	const major = "2.0.3.";
 	
-	if (version.indexOf(major) === major.indexOf(major) && parseInt(version.split(major)[1]) === 2) {
-		window.location.href = "device_dialog.2.0.3.2.html";
+	if (version.indexOf(major) === major.indexOf(major)) {
+		switch(parseInt(version.split(major)[1])) {
+		case 3:
+			window.location.href = "2.0.3.3/device_dialog.html";
+		}
 	}
 }) (top.databases.config.version);
 		</script>
@@ -214,10 +217,7 @@ function onApply(e) {
 		key: window.id,
 		value: device
 	}, function (/*data*/) {
-		// 이전 버전에서는 database 전체가 콜백 되기 때문에 아래와 같이 했지만
-		// top.databases.device = data;
-		// setDevice를 적용해 주기 위해 아래와 같이 변경
-		top.setDevice(window.id, device);
+		top.databases.device[window.id] = device;
 		
 		if (window.opener) {
 			window.opener.reload();
@@ -292,10 +292,12 @@ function onMonitorDevice(e) {
 			alert("사용 가능한 프로파일이 존재하지 않습니다.\n"+ "\n" +"먼저 프로파일을 생성하십시오.");
 		}
 		else {
+			const device = top.databases.device[window.id];
+			
 			return top.sendRequest({
 				command: "put",
 				database: "monitor",
-				key: window.id,
+				key: device.ip,
 				value: this.value === "none"? null: {
 					protocol: this.value
 				}

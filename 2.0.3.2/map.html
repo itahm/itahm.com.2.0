@@ -7,11 +7,11 @@
 		<title>ITAhM</title>
 		
 		<style>
-@import "css/itahm.css";
+@import "/css/itahm.css";
 
 body {
 	position: fixed; top: 0; right: 0; bottom: 0; left: 0;
-	background: url("img/world.png") no-repeat center center fixed;
+	background: url("/img/world.png") no-repeat center center fixed;
 	background-size: cover;
 }
 
@@ -111,14 +111,6 @@ body.loading g,
 
 .device.checked circle {
 	fill: #fff;
-}
-
-.device.critical circle {
-	stroke: #fa0;
-}
-
-.device.shutdown circle {
-	stroke: #f00; 
 }
 
 .device.hover circle,
@@ -546,20 +538,11 @@ function drawDevice(id) {
 		icon = getIcon(device.type || "unknown"),
 		monitor = device.ip && top.databases.monitor[device.ip];
 	
-	removeClass(svgDevice, "shutdown", "critical");
-	
 	if (!monitor) {
-		svgIcon.setAttributeNS(xlinkNS, "xlink:href", icon.disabled);
+		svgIcon.setAttributeNS(xlinkNS, "xlink:href", "/"+ icon.disabled);
 	}
 	else {
-		svgIcon.setAttributeNS(xlinkNS, "xlink:href", icon.src);
-		
-		if (monitor.shutdown) {
-			addClass(svgDevice, "shutdown");
-		}
-		else if (monitor.critical) {
-			addClass(svgDevice, "critical");
-		}
+		svgIcon.setAttributeNS(xlinkNS, "xlink:href", "/"+ icon.src);
 	}
 }
 
@@ -759,8 +742,6 @@ function setGroupStatus(id, status) {
 
 function initialize() {
 	var group = top.databases.local.parent,
-		shutdown = {},
-		critical = {},
 		device, pos;
 	
 	for (var id in top.databases.device) {
@@ -779,25 +760,6 @@ function initialize() {
 		if (pos.parent === group) {
 			addDevice(id, pos);
 		}
-		// upper 그룹일수도 lower 그룹일수도 있음
-		// upper 그룹은 대상이 아님
-		// 모니터링 대상장비 이어야 함
-		else if (pos.parent && device.ip && device.ip in top.databases.monitor) {
-			if (top.databases.monitor[device.ip].shutdown) {
-				shutdown[pos.parent] = true;
-			}
-			else if (top.databases.monitor[device.ip].critical) {
-				critical[pos.parent] = true;
-			}
-		}
-	}
-	
-	for (var id in shutdown) {
-		setGroupStatus(id, "shutdown");
-	}
-	
-	for (var id in critical) {
-		setGroupStatus(id, "critical");
 	}
 	
 	var id = top.databases.local.selected;
@@ -815,7 +777,7 @@ function initialize() {
 }
 
 function onLink(id, e) {
-	top.showDialog.call(window, "line_dialog.html", id, e.detail.peer);
+	top.showDialog.call(window, "/line_dialog.html", id, e.detail.peer);
 }
 
 function getIcon(type) {
@@ -860,7 +822,7 @@ function onEnterGroup(id) {
 			</defs>
 			<g class="parent" transform="translate(100, 100)">
 				<circle id="parent" cx="0" cy="0" r="40"></circle>
-				<image class="no_pointer_event" xlink:href="img/group.png" x="-30" y="-30" width="60" height="60"></image>
+				<image class="no_pointer_event" xlink:href="/img/group.png" x="-30" y="-30" width="60" height="60"></image>
 			</g>
 			<g id="transform" transform="translate(0, 0) scale(1, 1) translate(0, 0)">
 				<g id="line"></g>
@@ -870,15 +832,15 @@ function onEnterGroup(id) {
 				<g id="device"></g>
 				<!--g id="tool"-->
 					<g id="anchor">
-						<image xlink:href="img/svg/information.svg" id="edit_anchor" x="26" y="-8"
+						<image xlink:href="/img/svg/information.svg" id="edit_anchor" x="26" y="-8"
 							width="16" height="16" cursor="pointer"><!-- 34 -16/2, -16/2 -->
 							<title>이 장비의 정보를 수정합니다.</title>
 						</image>
-						<image xlink:href="img/svg/anchor.svg" id="link_anchor" class="root" x="-8" y="-42"
+						<image xlink:href="/img/svg/anchor.svg" id="link_anchor" class="root" x="-8" y="-42"
 							width="16" height="16" cursor="pointer"><!-- -16/2, -34 -16/2 -->
 							<title>이 앵커를 드래그하여 다른 장비와 연결합니다.</title>
 						</image>
-						<image xlink:href="img/svg/alarm.svg" id="alarm_anchor" class="root" x="-42" y="-8"
+						<image xlink:href="/img/svg/alarm.svg" id="alarm_anchor" class="root" x="-42" y="-8"
 							width="16" height="16" cursor="pointer"><!-- -34 -16/2, -16/2 -->
 							<title>성능의 임계값을 설정합니다.</title>
 						</image>
@@ -886,18 +848,18 @@ function onEnterGroup(id) {
 				<!--/g-->
 			</g>
 		</svg>
-		<header>
-			<img id="add_device" src="img/add_device.png" width="32px" height="32px" title="장비 추가">
-			<img id="add_group" src="img/add_group.png" width="32px" height="32px" title="그룹 추가">
-			<img id="save" src="img/save3.png" width="32px" height="32px" title="변경사항 저장">
+		<header class="root">
+			<img id="add_device" src="/img/add_device.png" width="32px" height="32px" title="장비 추가">
+			<img id="add_group" src="/img/add_group.png" width="32px" height="32px" title="그룹 추가">
+			<img id="save" src="/img/save3.png" width="32px" height="32px" title="변경사항 저장">
 		</header>
 		<nav>
-			<img src="img/zoomo.png" width="16" height="16" title="대시보드로 복귀" id="restore">
-			<img src="img/plus.png" width="16" height="16" title="맵 확대" id="zoom_in">
-			<img src="img/minus.png" width="16" height="16" title="맵 축소" id="zoom_out">
+			<img src="/img/zoomo.png" width="16" height="16" title="대시보드로 복귀" id="restore">
+			<img src="/img/plus.png" width="16" height="16" title="맵 확대" id="zoom_in">
+			<img src="/img/minus.png" width="16" height="16" title="맵 축소" id="zoom_out">
 		</nav>
-		<script src="js/ITAhM.js"></script>
-		<script src="js/Draggable.js"></script>
+		<script src="/js/ITAhM.js"></script>
+		<script src="/js/Draggable.js"></script>
 		<script>
 		
 var svgNS = "http://www.w3.org/2000/svg",
@@ -941,27 +903,27 @@ document.onselectstart = function () {
 }
 
 document.getElementById("restore").onclick = function () {
-	window.location.href = "dashboard.2.0.3.2.html";
+	window.location.href = "/2.0.3.2/dashboard.html";
 }
 
 document.getElementById("add_device").onclick = function () {
-	top.showDialog.call(window, "device_dialog.html");
+	top.showDialog.call(window, "/device_dialog.html");
 };
 
 document.getElementById("add_group").onclick = function () {
-	top.showDialog.call(window, "group_dialog.html");
+	top.showDialog.call(window, "/group_dialog.html");
 };
 
 document.getElementById("save").onclick = onSave;
 
 alarmAnchor.onclick = function (e) {
-	top.showDialog.call(window, "critical_dialog.html", top.databases.device[window.selected].ip);
+	top.showDialog.call(window, "/critical_dialog.html", top.databases.device[window.selected].ip);
 	
 	e.stopPropagation();
 };
 
 editAnchor.onclick = function (e) {
-	top.showDialog.call(window, top.databases.device[window.selected].group? "group_dialog.html": "device_dialog.html", window.selected);
+	top.showDialog.call(window, top.databases.device[window.selected].group? "/group_dialog.html": "/device_dialog.html", window.selected);
 	
 	e.stopPropagation();
 };
